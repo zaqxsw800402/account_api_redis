@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"red/domain"
 	"red/dto"
 	"red/errs"
@@ -56,7 +55,7 @@ func (s DefaultCustomerService) SaveCustomer(req dto.CustomerRequest) (*dto.Cust
 		Zipcode:     req.Zipcode,
 		DateOfBirth: req.DateOfBirth,
 	}
-	fmt.Println("a", a)
+	//fmt.Println("a", a)
 	c, err := s.repo.Save(a)
 	if err != nil {
 		return nil, err

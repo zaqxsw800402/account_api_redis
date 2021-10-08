@@ -27,9 +27,9 @@ func (d AccountRepositoryDB) Save(a Account) (*Account, *errs.AppError) {
 	return &a, nil
 }
 
-func (d AccountRepositoryDB) FindBy(id string) (*Account, *errs.AppError) {
+func (d AccountRepositoryDB) FindBy(id uint) (*Account, *errs.AppError) {
 	var a Account
-	result := d.client.Where("account_id = ?", id).First(&a)
+	result := d.client.Table("Accounts").Preload("Transactions").Where("account_id = ?", id).Find(&a)
 	err := result.Error
 	if err != nil {
 		if err == sql.ErrNoRows {

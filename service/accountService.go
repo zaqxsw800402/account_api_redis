@@ -10,6 +10,7 @@ import (
 type AccountService interface {
 	NewAccount(request dto.NewAccountRequest) (*dto.NewAccountResponse, *errs.AppError)
 	MakeTransaction(request dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError)
+	GetAccount(accountId uint) (*domain.Account, *errs.AppError)
 }
 
 type DefaultAccountService struct {
@@ -17,6 +18,14 @@ type DefaultAccountService struct {
 }
 
 const dbTSLayout = "2006-01-02 15:04:05"
+
+func (s DefaultAccountService) GetAccount(accountId uint) (*domain.Account, *errs.AppError) {
+	account, err := s.repo.FindBy(accountId)
+	if err != nil {
+		return nil, err
+	}
+	return account, nil
+}
 
 func (s DefaultAccountService) NewAccount(req dto.NewAccountRequest) (*dto.NewAccountResponse, *errs.AppError) {
 

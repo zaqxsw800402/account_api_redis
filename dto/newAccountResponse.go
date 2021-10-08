@@ -1,5 +1,5 @@
 package dto
 
 type NewAccountResponse struct {
-	AccountId string `json:"account_id"`
+	AccountId uint `json:"account_id"`
 }

@@ -32,6 +32,7 @@ func Start() {
 	server.GET("/customers/:id", ch.getCustomer)
 
 	server.POST("/customers/:id/account", ah.NewAccount)
+	server.GET("/customers/:id/account/:account_id", ah.getAccount)
 	server.POST("/customers/:id/account/:account_id", ah.MakeTransaction)
 	server.Run(":8080")
 }

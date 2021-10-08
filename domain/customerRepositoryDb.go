@@ -2,7 +2,6 @@ package domain
 
 import (
 	"database/sql"
-	"fmt"
 	"gorm.io/gorm"
 	"red/errs"
 	"red/logger"
@@ -17,7 +16,7 @@ func NewCustomerRepositoryDb(dbClient *gorm.DB) CustomerRepositoryDb {
 }
 
 func (d CustomerRepositoryDb) Save(c Customer) (*Customer, *errs.AppError) {
-	fmt.Println(c)
+	//fmt.Println(c)
 	result := d.client.Create(&c)
 	err := result.Error
 	if err != nil {
@@ -31,7 +30,7 @@ func (d CustomerRepositoryDb) Save(c Customer) (*Customer, *errs.AppError) {
 func (d CustomerRepositoryDb) ById(id string) (*Customer, *errs.AppError) {
 
 	var c Customer
-	result := d.client.Where("customer_id = ?", id).First(&c)
+	result := d.client.Table("Customers").Preload("Accounts").Where("customer_id = ?", id).Find(&c)
 	if result.Error != nil {
 		if result.Error == sql.ErrNoRows {
 			return nil, errs.NewNotFoundError("Customer not found")
@@ -40,6 +39,8 @@ func (d CustomerRepositoryDb) ById(id string) (*Customer, *errs.AppError) {
 			return nil, errs.NewUnexpectedError("Unexpected database error")
 		}
 	}
+
+	//fmt.Println(c)
 	return &c, nil
 }
 

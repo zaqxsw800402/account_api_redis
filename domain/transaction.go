@@ -3,12 +3,12 @@ package domain
 import "red/dto"
 
 type Transaction struct {
-	TransactionId   string `gorm:"primaryKey;autoIncrement"`
-	AccountId       string
+	TransactionId   uint `gorm:"primaryKey;autoIncrement"`
+	AccountId       uint
 	Amount          float64
 	TransactionType string
 	TransactionDate string
-	Accounts        []Account `gorm:"foreignKey:AccountId;references:AccountId"`
+	//Accounts        []Account `gorm:"foreignKey:AccountId;references:AccountId"`
 }
 
 func (t Transaction) IsWithdrawal() bool {

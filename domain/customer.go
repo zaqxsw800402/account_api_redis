@@ -11,7 +11,8 @@ type Customer struct {
 	City        string
 	Zipcode     string
 	DateOfBirth string
-	Status      string `gorm:"default:1"`
+	Status      string    `gorm:"default:1"`
+	Accounts    []Account `gorm:"foreignKey:CustomerId;references:Id"`
 }
 
 func (c Customer) ToDto() dto.CustomerResponse {
@@ -22,6 +23,7 @@ func (c Customer) ToDto() dto.CustomerResponse {
 		Zipcode:     c.Zipcode,
 		DateOfBirth: c.DateOfBirth,
 		Status:      c.statusAsText(),
+		Accounts:    c.Accounts,
 	}
 }
 
