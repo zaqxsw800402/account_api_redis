@@ -6,13 +6,13 @@ import (
 )
 
 type Account struct {
-	AccountId    uint          `gorm:"column:account_id;primaryKey;autoIncrement"`
-	CustomerId   uint          `gorm:"column:customer_id"`
-	OpeningDate  string        `gorm:"column:opening_date"`
-	AccountType  string        `gorm:"column:account_type"`
-	Amount       float64       `gorm:"column:amount"`
-	Status       string        `gorm:"column:status"`
-	Transactions []Transaction `gorm:"foreignKey:AccountId;references:AccountId"`
+	AccountId    uint          `gorm:"column:account_id;primaryKey;autoIncrement" json:"account_id"`
+	CustomerId   uint          `gorm:"column:customer_id" json:"customer_id"`
+	OpeningDate  string        `gorm:"column:opening_date" json:"opening_date"`
+	AccountType  string        `gorm:"column:account_type" json:"account_type"`
+	Amount       float64       `gorm:"column:amount" json:"amount"`
+	Status       string        `gorm:"column:status" json:"status"`
+	Transactions []Transaction `gorm:"foreignKey:AccountId;references:AccountId" json:"transactions"`
 	//Customers   []Customer `gorm:"foreignKey:Id;references:CustomerId"`
 }
 

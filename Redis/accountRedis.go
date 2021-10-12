@@ -7,12 +7,12 @@ import (
 )
 
 type AccountResponse struct {
-	AccountId   uint
-	CustomerId  uint
-	OpeningDate string
-	AccountType string
-	Amount      float64
-	Status      string
+	AccountId   uint    `redis:"AccountId" json:"account_id"`
+	CustomerId  uint    `redis:"CustomerId" json:"customer_id"`
+	OpeningDate string  `redis:"OpeningDate" json:"opening_date"`
+	AccountType string  `redis:"AccountType" json:"account_type"`
+	Amount      float64 `redis:"Amount" json:"amount"`
+	Status      string  `redis:"Status" json:"status"`
 }
 
 func GetAccount(id string) *AccountResponse {
