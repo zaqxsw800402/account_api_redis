@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"red/domain"
+	"red/logger"
 	"red/service"
 	"time"
 )
@@ -20,6 +21,8 @@ func Start() {
 	}
 
 	server := gin.Default()
+	server.Use(logger.GinLogger(), logger.GinRecovery(true))
+
 	dbClient := getDBClient()
 	customerRepositoryDb := domain.NewCustomerRepositoryDb(dbClient)
 	accountRepositoryDb := domain.NewAccountRepositoryDb(dbClient)
