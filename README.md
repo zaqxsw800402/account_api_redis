@@ -1,8 +1,8 @@
 # account_api_golang
 
-運用gin、gorm、redis來架設api
+運用gin、gorm、redis來架設api <br>
 log改成用zap <br>
-新增[監測log](https://github.com/zaqxsw800402/log_monitor)
+[監測 log](https://github.com/zaqxsw800402/log_monitor)
 
 # 架構圖
 
