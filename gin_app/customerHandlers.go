@@ -26,6 +26,7 @@ func (ch *CustomerHandlers) getAllCustomers(c *gin.Context) {
 func (ch *CustomerHandlers) getCustomer(c *gin.Context) {
 	id := c.Param("id")
 
+	// 檢查時間內讀取的次數，太多次則拒絕提供資料
 	appError := Redis.CustomerTimes(id)
 	if appError != nil {
 		c.JSON(appError.Code, appError.AsMessage())

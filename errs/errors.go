@@ -13,6 +13,7 @@ func (e AppError) AsMessage() *AppError {
 	}
 }
 
+// NewNotFoundError 404
 func NewNotFoundError(message string) *AppError {
 	return &AppError{
 		Message: message,
@@ -20,6 +21,7 @@ func NewNotFoundError(message string) *AppError {
 	}
 }
 
+// NewUnexpectedError 500
 func NewUnexpectedError(message string) *AppError {
 	return &AppError{
 		Message: message,
@@ -27,6 +29,7 @@ func NewUnexpectedError(message string) *AppError {
 	}
 }
 
+// NewValidationError 422
 func NewValidationError(message string) *AppError {
 	return &AppError{
 		Message: message,
@@ -34,6 +37,7 @@ func NewValidationError(message string) *AppError {
 	}
 }
 
+// TooManyTimes 短時間內登入次數過多 400
 func TooManyTimes(message string) *AppError {
 	return &AppError{
 		Message: message,
