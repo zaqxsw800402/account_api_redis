@@ -5,6 +5,12 @@ import (
 	"red/errs"
 )
 
+type CustomerRepository interface {
+	FindAll(status string) ([]Customer, *errs.AppError)
+	ById(string) (*Customer, *errs.AppError)
+	Save(customer Customer) (*Customer, *errs.AppError)
+}
+
 type Customer struct {
 	Id          uint `gorm:"column:customer_id;primaryKey;autoIncrement"`
 	Name        string
@@ -15,6 +21,7 @@ type Customer struct {
 	Accounts    []Account `gorm:"foreignKey:CustomerId;references:Id"`
 }
 
+// ToDto 將資料更改成需要回傳的格式
 func (c Customer) ToDto() dto.CustomerResponse {
 	return dto.CustomerResponse{
 		Id:          c.Id,
@@ -27,16 +34,11 @@ func (c Customer) ToDto() dto.CustomerResponse {
 	}
 }
 
+// statusAsText 轉換資料格式
 func (c Customer) statusAsText() string {
 	statusAsText := "active"
 	if c.Status == "0" {
 		statusAsText = "inactive"
 	}
 	return statusAsText
-}
-
-type CustomerRepository interface {
-	FindAll(status string) ([]Customer, *errs.AppError)
-	ById(string) (*Customer, *errs.AppError)
-	Save(customer Customer) (*Customer, *errs.AppError)
 }

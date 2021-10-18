@@ -6,7 +6,6 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"log"
 	"os"
 	"red/domain"
 	"red/logger"
@@ -57,13 +56,15 @@ func Start() {
 	}
 }
 
+// loadEnv 讀取.env檔案
 func loadEnv() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		logger.Error("Error loading .env file, error: " + err.Error())
 	}
 }
 
+// getDBClient 建立與db的連接
 func getDBClient() *gorm.DB {
 	// 讀取環境變數
 	dbUser := os.Getenv("DB_USER")

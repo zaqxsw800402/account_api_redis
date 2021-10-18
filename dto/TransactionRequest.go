@@ -12,10 +12,14 @@ type TransactionRequest struct {
 	CustomerId      string  `json:"-"`
 }
 
-const WITHDRAWAL = "withdrawal"
-const DEPOSIT = "deposit"
+const (
+	WITHDRAWAL = "withdrawal"
+	DEPOSIT    = "deposit"
+)
 
+// Validate 判斷內容是否有效
 func (r TransactionRequest) Validate() *errs.AppError {
+	// 判斷有無錯字
 	if !r.IsTransactionTypeWithdrawal() && !r.IsTransactionTypeDeposit() {
 		return errs.NewValidationError("transaction type can only be deposit or withdrawal")
 	}

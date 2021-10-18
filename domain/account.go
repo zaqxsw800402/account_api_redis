@@ -13,11 +13,6 @@ type Account struct {
 	Amount       float64       `gorm:"column:amount" json:"amount"`
 	Status       string        `gorm:"column:status" json:"status"`
 	Transactions []Transaction `gorm:"foreignKey:AccountId;references:AccountId" json:"transactions"`
-	//Customers   []Customer `gorm:"foreignKey:Id;references:CustomerId"`
-}
-
-func (a Account) ToNewAccountResponseDto() dto.NewAccountResponse {
-	return dto.NewAccountResponse{AccountId: a.AccountId}
 }
 
 type AccountRepository interface {
@@ -26,6 +21,12 @@ type AccountRepository interface {
 	SaveTransaction(t Transaction) (*Transaction, *errs.AppError)
 }
 
+// ToNewAccountResponseDto 轉換成回傳的json格式
+func (a Account) ToNewAccountResponseDto() dto.NewAccountResponse {
+	return dto.NewAccountResponse{AccountId: a.AccountId}
+}
+
+// CanWithdraw 判斷是否能取出金錢
 func (a Account) CanWithdraw(amount float64) bool {
 	if a.Amount < amount {
 		return false
