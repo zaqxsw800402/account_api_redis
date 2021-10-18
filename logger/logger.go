@@ -9,28 +9,26 @@ import (
 var log *zap.Logger
 
 func init() {
-	var err error
+	//var err error
 
-	//config := zap.NewProductionConfig()
-
+	// 更改輸出的格式
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.TimeKey = "timestamp"
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	encoderConfig.StacktraceKey = ""
-	//config.EncoderConfig = encoderConfig
 	encoder := zapcore.NewJSONEncoder(encoderConfig)
-	//encoder := zapcore.NewConsoleEncoder(encoderConfig)
 
-	file, _ := os.Create("./info.log")
+	// 存入檔案的名稱及位置
+	file, err := os.Create("./info.log")
+	if err != nil {
+		Error("failed to create zap log file, error: " + err.Error())
+	}
 	writeSyncer := zapcore.AddSync(file)
 
+	// 建立logger
 	core := zapcore.NewCore(encoder, writeSyncer, zapcore.DebugLevel)
 	log = zap.New(core, zap.AddCallerSkip(1), zap.AddCaller())
-	//log, err = config.Build(zap.AddCallerSkip(1))
 
-	if err != nil {
-		panic(err)
-	}
 }
 
 func Info(message string, fields ...zap.Field) {

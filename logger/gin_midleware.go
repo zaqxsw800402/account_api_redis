@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// GinLogger 建立gin的logger
 func GinLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
@@ -33,7 +34,7 @@ func GinLogger() gin.HandlerFunc {
 	}
 }
 
-// GinRecovery recover掉项目可能出现的panic，并使用zap记录相关日志
+// GinRecovery 使用zap紀錄日誌
 func GinRecovery(stack bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
