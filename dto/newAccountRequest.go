@@ -11,6 +11,10 @@ type NewAccountRequest struct {
 	Amount      float64 `json:"amount"`
 }
 
+type NewAccountResponse struct {
+	AccountId uint `json:"account_id"`
+}
+
 // Validate 檢查body裡的資料是否有效
 func (r NewAccountRequest) Validate() *errs.AppError {
 	// 初始帳戶低於5000元，則判定無效

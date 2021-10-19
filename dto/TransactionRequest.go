@@ -4,6 +4,11 @@ import (
 	"red/errs"
 )
 
+const (
+	WITHDRAWAL = "withdrawal"
+	DEPOSIT    = "deposit"
+)
+
 type TransactionRequest struct {
 	AccountId       uint    `json:"account_id"`
 	Amount          float64 `json:"amount"`
@@ -12,10 +17,13 @@ type TransactionRequest struct {
 	CustomerId      string  `json:"-"`
 }
 
-const (
-	WITHDRAWAL = "withdrawal"
-	DEPOSIT    = "deposit"
-)
+type TransactionResponse struct {
+	TransactionId   uint    `json:"transaction_id"`
+	AccountId       uint    `json:"account_id"`
+	Amount          float64 `json:"new_balance"`
+	TransactionType string  `json:"transaction_type"`
+	TransactionDate string  `json:"transaction_date"`
+}
 
 // Validate 判斷內容是否有效
 func (r TransactionRequest) Validate() *errs.AppError {

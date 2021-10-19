@@ -13,16 +13,6 @@ import (
 	"time"
 )
 
-//var dbClient *gorm.DB
-
-//func init() {
-//	// 讀取.env檔案
-//	loadEnv()
-//
-//	//建立連線池
-//	dbClient = getDBClient()
-//}
-
 func Start() {
 	// 讀取.env檔案
 	loadEnv()
