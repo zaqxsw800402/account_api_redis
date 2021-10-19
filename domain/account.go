@@ -15,6 +15,7 @@ type Account struct {
 	Transactions []Transaction `gorm:"foreignKey:AccountId;references:AccountId" json:"transactions"`
 }
 
+//go:generate mockgen -destination=../mocks/domain/mockAccountRepository.go -package=domain red/domain AccountRepository
 type AccountRepository interface {
 	Save(account Account) (*Account, *errs.AppError)
 	FindBy(id uint) (*Account, *errs.AppError)

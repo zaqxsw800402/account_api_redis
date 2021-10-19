@@ -8,7 +8,7 @@ import (
 
 var log *zap.Logger
 
-func init() {
+func ZapInit() {
 	// 更改輸出的格式
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.TimeKey = "timestamp"

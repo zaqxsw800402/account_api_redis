@@ -14,6 +14,7 @@ import (
 )
 
 func Start() {
+	logger.ZapInit()
 	// 讀取.env檔案
 	loadEnv()
 

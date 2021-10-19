@@ -25,7 +25,7 @@ func setUp(t *testing.T) {
 	}
 }
 
-func TestCustomerHandlers_getCustomer(t *testing.T) {
+func TestCustomerHandlers_GetAllCustomer(t *testing.T) {
 	setUp(t)
 
 	dummyCustomer := []dto.CustomerResponse{
@@ -50,7 +50,7 @@ func TestCustomerHandlers_getCustomer(t *testing.T) {
 
 }
 
-func TestCustomerHandlers_getCustomer_fail_code500(t *testing.T) {
+func TestCustomerHandlers_GetAllCustomer_fail_code500(t *testing.T) {
 	setUp(t)
 
 	mockService.EXPECT().GetAllCustomer("").Return(nil, errs.NewUnexpectedError("Unexpected database error"))
