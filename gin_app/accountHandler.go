@@ -12,6 +12,7 @@ import (
 
 type AccountHandler struct {
 	service service.AccountService
+	redisDB Redis.Database
 }
 
 // NewAccount 申請新帳戶
@@ -52,7 +53,7 @@ func (h AccountHandler) MakeTransaction(c *gin.Context) {
 	accountId := c.Param("account_id")
 
 	// 紀錄交易的次數
-	appError := Redis.TransactionTimes(accountId)
+	appError := h.redisDB.TransactionTimes(accountId)
 	if appError != nil {
 		c.JSON(appError.Code, appError.AsMessage())
 		return
@@ -87,7 +88,7 @@ func (h AccountHandler) getAccount(c *gin.Context) {
 	accountId := c.Param("account_id")
 
 	// 檢查Redis裡是否已經有資料
-	if account := Redis.GetAccount(accountId); account != nil {
+	if account := h.redisDB.GetAccount(accountId); account != nil {
 		c.JSON(http.StatusOK, account)
 		return
 	}
@@ -105,5 +106,5 @@ func (h AccountHandler) getAccount(c *gin.Context) {
 	}
 
 	// 將資料存進Redis
-	Redis.SaveAccount(account)
+	h.redisDB.SaveAccount(account)
 }

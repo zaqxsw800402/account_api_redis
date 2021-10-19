@@ -17,11 +17,11 @@ type AccountResponse struct {
 }
 
 // GetAccount 查詢帳戶資料
-func GetAccount(id string) *AccountResponse {
+func (d Database) GetAccount(id string) *AccountResponse {
 	// 製作redis裡的專屬key
 	key := fmt.Sprintf("%s:%s:response", Account, id)
 	// 讀取redis裡的資料
-	res := RC.HGetAll(ctx, key)
+	res := d.RC.HGetAll(ctx, key)
 	// 判斷res裡面是否有值
 	if _, ok := res.Val()["AccountId"]; !ok {
 		return nil
@@ -37,10 +37,10 @@ func GetAccount(id string) *AccountResponse {
 }
 
 // SaveAccount 儲存資料到redis裡面
-func SaveAccount(c *domain.Account) {
+func (d Database) SaveAccount(c *domain.Account) {
 	// 製作專屬的key
 	key := fmt.Sprintf("%s:%d:response", Account, c.AccountId)
-	RC.HSet(ctx, key,
+	d.RC.HSet(ctx, key,
 		"AccountId", c.AccountId,
 		"CustomerId", c.CustomerId,
 		"OpeningDate", c.OpeningDate,
@@ -49,5 +49,5 @@ func SaveAccount(c *domain.Account) {
 		"Status", c.Status,
 	)
 	// 設定過期時間
-	RC.Expire(ctx, key, time.Minute)
+	d.RC.Expire(ctx, key, time.Minute)
 }

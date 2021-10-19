@@ -181,6 +181,7 @@ func TestMakeTransaction_Type_Failed(t *testing.T) {
 	}
 
 	mockRepo.EXPECT().SaveTransaction(transaction).Return(saveTransaction, nil)
+	//mockRepo.SaveTransaction(transaction)
 	//Act
 	newTransaction, appError := service.MakeTransaction(req)
 	//Assert

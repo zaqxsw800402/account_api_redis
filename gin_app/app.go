@@ -3,10 +3,12 @@ package gin_app
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"os"
+	"red/Redis"
 	"red/domain"
 	"red/logger"
 	"red/service"
@@ -20,6 +22,7 @@ func Start() {
 
 	//建立連線池
 	dbClient := getDBClient()
+	redisClient := getRedisClient()
 
 	server := gin.Default()
 
@@ -30,9 +33,12 @@ func Start() {
 	customerRepositoryDb := domain.NewCustomerRepositoryDb(dbClient)
 	accountRepositoryDb := domain.NewAccountRepositoryDb(dbClient)
 
+	//建立redis
+	redisDB := Redis.NewRedisDb(redisClient)
+
 	//建立各個Handlers
-	ch := CustomerHandlers{service.NewCustomerService(customerRepositoryDb)}
-	ah := AccountHandler{service.NewAccountService(accountRepositoryDb)}
+	ch := CustomerHandlers{service.NewCustomerService(customerRepositoryDb), redisDB}
+	ah := AccountHandler{service.NewAccountService(accountRepositoryDb), redisDB}
 
 	//查詢全部顧客
 	server.GET("/customers", ch.getAllCustomers)
@@ -97,4 +103,18 @@ func getDBClient() *gorm.DB {
 	}
 
 	return db
+}
+
+func getRedisClient() *redis.Client {
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+	//pong, err := client.Ping(ctx).Result()
+	//log.Println(pong)
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
+	return client
 }

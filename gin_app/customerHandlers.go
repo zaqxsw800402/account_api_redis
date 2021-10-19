@@ -11,6 +11,7 @@ import (
 
 type CustomerHandlers struct {
 	service service.CustomerService
+	redisDB Redis.Database
 }
 
 func (ch *CustomerHandlers) getAllCustomers(c *gin.Context) {
@@ -27,13 +28,13 @@ func (ch *CustomerHandlers) getCustomer(c *gin.Context) {
 	id := c.Param("id")
 
 	// 檢查時間內讀取的次數，太多次則拒絕提供資料
-	appError := Redis.CustomerTimes(id)
+	appError := ch.redisDB.CustomerTimes(id)
 	if appError != nil {
 		c.JSON(appError.Code, appError.AsMessage())
 		return
 	}
 
-	if customer := Redis.GetCustomer(id); customer != nil {
+	if customer := ch.redisDB.GetCustomer(id); customer != nil {
 		c.JSON(http.StatusOK, customer)
 		fmt.Println("Using redis")
 		return
@@ -42,11 +43,12 @@ func (ch *CustomerHandlers) getCustomer(c *gin.Context) {
 	customer, appError := ch.service.GetCustomer(id)
 	if appError != nil {
 		c.JSON(appError.Code, appError.AsMessage())
+		return
 	} else {
 		c.JSON(http.StatusOK, customer)
 	}
 
-	Redis.SaveCustomer(customer)
+	ch.redisDB.SaveCustomer(customer)
 
 }
 
@@ -55,6 +57,7 @@ func (ch *CustomerHandlers) newCustomers(c *gin.Context) {
 	err := c.ShouldBindJSON(&customer)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
+		return
 	}
 	response, appError := ch.service.SaveCustomer(customer)
 	if appError != nil {
