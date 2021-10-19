@@ -21,7 +21,6 @@
 /.idea/dataSources.xml
 /go.mod
 /go.sum
-/mocks/service/mockCustomerService.go
 /.idea/modules.xml
 /.idea/sqldialects.xml
 /.idea/vcs.xml

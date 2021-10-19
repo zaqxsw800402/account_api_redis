@@ -7,7 +7,7 @@ import (
 	"red/logger"
 )
 
-//go:generate mockgen -destination=../mocks/service/mockCustomerService.go -package=service banking/service CustomerService
+//go:generate mockgen -destination=../mocks/service/mockCustomerService.go -package=service red/service CustomerService
 type CustomerService interface {
 	GetAllCustomer(string) ([]dto.CustomerResponse, *errs.AppError)
 	GetCustomer(string) (*dto.CustomerResponse, *errs.AppError)

@@ -8,7 +8,6 @@ type Transaction struct {
 	Amount          float64
 	TransactionType string
 	TransactionDate string
-	//Accounts        []Account `gorm:"foreignKey:AccountId;references:AccountId"`
 }
 
 func (t Transaction) IsWithdrawal() bool {
