@@ -15,8 +15,8 @@ type AccountHandler struct {
 	redisDB Redis.Database
 }
 
-// NewAccount 申請新帳戶
-func (h AccountHandler) NewAccount(c *gin.Context) {
+// newAccount 申請新帳戶
+func (h AccountHandler) newAccount(c *gin.Context) {
 	// 讀取id的值
 	customerId := c.Param("id")
 	var request dto.NewAccountRequest
@@ -46,8 +46,8 @@ func (h AccountHandler) NewAccount(c *gin.Context) {
 
 }
 
-// MakeTransaction 申請交易
-func (h AccountHandler) MakeTransaction(c *gin.Context) {
+// makeTransaction 申請交易
+func (h AccountHandler) makeTransaction(c *gin.Context) {
 	// 讀取資料
 	customerId := c.Param("id")
 	accountId := c.Param("account_id")

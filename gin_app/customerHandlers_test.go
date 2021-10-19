@@ -17,21 +17,21 @@ import (
 
 var router *gin.Engine
 var ch CustomerHandlers
-var mockService *service2.MockCustomerService
-
-//var mock *redismock.ClientMock
+var ah AccountHandler
+var mockCustomer *service2.MockCustomerService
+var mockAccount *service2.MockAccountService
 
 func setUp(t *testing.T) {
 	router = gin.Default()
 	// mock service
 	ctrl := gomock.NewController(t)
-	mockService = service2.NewMockCustomerService(ctrl)
+	mockCustomer = service2.NewMockCustomerService(ctrl)
 	// mock redis
 	client, _ := redismock.NewClientMock()
 	db := Redis.NewRedisDb(client)
 
 	ch = CustomerHandlers{
-		mockService,
+		mockCustomer,
 		db,
 	}
 }
@@ -43,7 +43,7 @@ func TestCustomerHandlers_getAllCustomer_Success(t *testing.T) {
 		{1, "Ivy", "Taiwan", "238", "2000-01-01", "1", nil},
 		{1, "Lily", "Taiwan", "1111", "2000-01-01", "1", nil},
 	}
-	mockService.EXPECT().GetAllCustomer("").Return(dummyCustomer, nil)
+	mockCustomer.EXPECT().GetAllCustomer("").Return(dummyCustomer, nil)
 
 	router.GET("/customers", ch.getAllCustomers)
 
@@ -64,7 +64,7 @@ func TestCustomerHandlers_getAllCustomer_Success(t *testing.T) {
 func TestCustomerHandlers_getAllCustomer_Failed_code500(t *testing.T) {
 	setUp(t)
 
-	mockService.EXPECT().GetAllCustomer("").Return(nil, errs.NewUnexpectedError("Unexpected database error"))
+	mockCustomer.EXPECT().GetAllCustomer("").Return(nil, errs.NewUnexpectedError("Unexpected database error"))
 
 	router.GET("/customers", ch.getAllCustomers)
 
@@ -100,7 +100,7 @@ func TestCustomerHandlers_newCustomers_Success(t *testing.T) {
 		Status:      "active",
 		Accounts:    nil,
 	}
-	mockService.EXPECT().SaveCustomer(customer).Return(&expectedCustomer, nil)
+	mockCustomer.EXPECT().SaveCustomer(customer).Return(&expectedCustomer, nil)
 	router.POST("/customers", ch.newCustomers)
 
 	body := `{
@@ -163,7 +163,7 @@ func TestCustomerHandlers_getCustomer_Success(t *testing.T) {
 		Status:      "active",
 		Accounts:    nil,
 	}
-	mockService.EXPECT().GetCustomer("").Return(&expectedCustomer, nil)
+	mockCustomer.EXPECT().GetCustomer("").Return(&expectedCustomer, nil)
 	router.GET("/customers/1", ch.getCustomer)
 
 	response := `{"customer_id":1,"name":"Ivy","city":"Taiwan","zipcode":"110075","date_of_birth":"1978-12-15","status":"active","accounts":null}`
@@ -181,11 +181,11 @@ func TestCustomerHandlers_getCustomer_Success(t *testing.T) {
 
 }
 
-func TestCustomerHandlers_getCustomer_Failed(t *testing.T) {
+func TestCustomerHandlers_getCustomer_BadRequest(t *testing.T) {
 	// Arrange
 	setUp(t)
 
-	mockService.EXPECT().GetCustomer("30").Return(nil, errs.NewUnexpectedError("Unexpected database error"))
+	mockCustomer.EXPECT().GetCustomer("30").Return(nil, errs.NewUnexpectedError("Unexpected database error"))
 	router.GET("/customers/:id", ch.getCustomer)
 
 	// Act

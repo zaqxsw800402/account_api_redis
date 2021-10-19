@@ -48,11 +48,11 @@ func Start() {
 	server.GET("/customers/:id", ch.getCustomer)
 
 	// 在特地的顧客下創立帳戶
-	server.POST("/customers/:id/account", ah.NewAccount)
+	server.POST("/customers/:id/account", ah.newAccount)
 	// 查詢該帳戶的資料
 	server.GET("/customers/:id/account/:account_id", ah.getAccount)
 	// 提供儲存或領取金錢
-	server.POST("/customers/:id/account/:account_id", ah.MakeTransaction)
+	server.POST("/customers/:id/account/:account_id", ah.makeTransaction)
 	err := server.Run(":8080")
 	if err != nil {
 		logger.Error("failed to run server, error: " + err.Error())

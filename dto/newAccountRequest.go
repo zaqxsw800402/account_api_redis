@@ -7,8 +7,8 @@ import (
 
 type NewAccountRequest struct {
 	CustomerId  uint    `json:"customer_id"`
-	AccountType string  `json:"account_type"`
-	Amount      float64 `json:"amount"`
+	AccountType string  `json:"account_type" binding:"required"`
+	Amount      float64 `json:"amount" binding:"required"`
 }
 
 type NewAccountResponse struct {
