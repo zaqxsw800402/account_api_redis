@@ -12,6 +12,7 @@ import (
 	"red/dto"
 	"red/errs"
 	service2 "red/mocks/service"
+	"reflect"
 	"testing"
 )
 
@@ -100,9 +101,7 @@ func TestAccountHandler_NewAccount_BadRequest(t *testing.T) {
 	//set body
 	setUpAccount(t)
 
-	body := `{
-    "amount" : 6000
-}`
+	body := `{"amount" : 6000}`
 	b := bytes.NewBufferString(body)
 	request, _ := http.NewRequest(http.MethodPost, "/customers/3/account", b)
 
@@ -120,9 +119,6 @@ func TestAccountHandler_GetAccount_Success(t *testing.T) {
 	//Arrange
 	//set body
 	setUpAccount(t)
-	///customers/:id/account/:account_id"
-
-	request, _ := http.NewRequest(http.MethodGet, "/customers/3/account/1", nil)
 
 	expectedAccount := domain.Account{
 		AccountId:    1,
@@ -134,65 +130,131 @@ func TestAccountHandler_GetAccount_Success(t *testing.T) {
 		Transactions: nil,
 	}
 
-	mockAccount.EXPECT().GetAccount(uint(1)).Return(&expectedAccount, nil)
+	response := `{"account_id":1,"customer_id":3,"opening_date":"2021-10-08 14:48:40","account_type":"saving","amount":6000,"status":"1","transactions":null}`
 	router.GET("/customers/:id/account/:account_id", ah.getAccount)
+
+	request, _ := http.NewRequest(http.MethodGet, "/customers/3/account/1", nil)
+	mockAccount.EXPECT().GetAccount(uint(1)).Return(&expectedAccount, nil)
 
 	recorder := httptest.NewRecorder()
 	router.ServeHTTP(recorder, request)
 
-	response := `{"account_id":1,"customer_id":3,"opening_date":"2021-10-08 14:48:40","account_type":"saving","amount":6000,"status":"1","transactions":null}`
+	//assert
+	if got := recorder.Body.String(); !reflect.DeepEqual(got, response) {
+		t.Errorf("Failed test while get account, \nexpected: %v\ngot: %v", got, response)
 
-	if exp := recorder.Body.String(); exp != response {
-		t.Errorf("Failed test while get account, \nexpected: %v\ngot: %v", exp, response)
 	}
 }
 
-//func TestAccountHandler_getAccount(t *testing.T) {
-//	//type fields struct {
-//	//	service service.AccountService
-//	//	redisDB Redis.Database
-//	//}
-//	//type args struct {
-//	//	c *gin.Context
-//	//}
-//	tests := []struct {
-//		name   string
-//		fields fields
-//		args   args
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			h := AccountHandler{
-//				service: tt.fields.service,
-//				redisDB: tt.fields.redisDB,
-//			}
-//		})
-//	}
-//}
+func TestAccountHandler_GetAccount_FailedGet(t *testing.T) {
+	//Arrange
+	setUpAccount(t)
 
-//func TestAccountHandler_makeTransaction(t *testing.T) {
-//	type fields struct {
-//		service service.AccountService
-//		redisDB Redis.Database
-//	}
-//	type args struct {
-//		c *gin.Context
-//	}
-//	tests := []struct {
-//		name   string
-//		fields fields
-//		args   args
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			h := AccountHandler{
-//				service: tt.fields.service,
-//				redisDB: tt.fields.redisDB,
-//			}
-//		})
-//	}
-//}
+	router.GET("/customers/:id/account/:account_id", ah.getAccount)
+
+	request, _ := http.NewRequest(http.MethodGet, "/customers/3/account/1", nil)
+	mockAccount.EXPECT().GetAccount(uint(1)).Return(nil, errs.NewNotFoundError("Account not found"))
+
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+
+	//assert
+	if got := recorder.Code; !reflect.DeepEqual(got, http.StatusNotFound) {
+		t.Errorf("Failed test while get account, \nexpected: %v\ngot: %v", got, http.StatusNotFound)
+	}
+}
+
+func TestAccountHandler_GetAccount_BadRequest(t *testing.T) {
+	//Arrange
+	setUpAccount(t)
+
+	response := `strconv.ParseUint: parsing "a": invalid syntax`
+	router.GET("/customers/:id/account/:account_id", ah.getAccount)
+
+	request, _ := http.NewRequest(http.MethodGet, "/customers/3/account/a", nil)
+	//fmt.Println("err: ",err)
+
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+
+	//assert
+	if got := recorder.Body.String(); !reflect.DeepEqual(got, response) {
+		t.Errorf("Failed test while get account, \nexpected: %v\ngot: %v", got, response)
+
+	}
+}
+
+func TestAccountHandler_makeTransaction_Success(t *testing.T) {
+	// Arrange
+	setUpAccount(t)
+
+	router.POST("/customers/:id/account/:account_id", ah.makeTransaction)
+
+	body := `{
+    "transaction_type":"deposit",
+    "amount" : 6000
+}`
+	b := bytes.NewBufferString(body)
+
+	req := dto.TransactionRequest{
+		AccountId:       1,
+		Amount:          6000,
+		TransactionType: "deposit",
+		TransactionDate: "",
+		CustomerId:      "3",
+	}
+
+	res := dto.TransactionResponse{
+		TransactionId:   1,
+		AccountId:       1,
+		Amount:          7000,
+		TransactionType: "deposit",
+		TransactionDate: "",
+	}
+	mockAccount.EXPECT().MakeTransaction(req).Return(&res, nil)
+
+	// Act
+	request, _ := http.NewRequest(http.MethodPost, "/customers/3/account/1", b)
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+
+	// Assert
+	exp := `{"transaction_id":1,"account_id":1,"new_balance":7000,"transaction_type":"deposit","transaction_date":""}`
+	if got := recorder.Body.String(); !reflect.DeepEqual(got, exp) {
+		t.Errorf("Failed test while get account, \nexpected: %v\ngot: %v", got, exp)
+	}
+}
+
+func TestAccountHandler_makeTransaction_BadRequest(t *testing.T) {
+	// Arrange
+	setUpAccount(t)
+
+	router.POST("/customers/:id/account/:account_id", ah.makeTransaction)
+
+	body := `{
+    "transaction_type":"dep",
+    "amount" : 6000
+}`
+	b := bytes.NewBufferString(body)
+
+	req := dto.TransactionRequest{
+		AccountId:       1,
+		Amount:          6000,
+		TransactionType: "dep",
+		TransactionDate: "",
+		CustomerId:      "3",
+	}
+
+	mockAccount.EXPECT().MakeTransaction(req).Return(nil, errs.NewValidationError("transaction type can only be deposit or withdrawal"))
+
+	// Act
+	request, _ := http.NewRequest(http.MethodPost, "/customers/3/account/1", b)
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+
+	// Assert
+	exp := `{"Message":"transaction type can only be deposit or withdrawal"}`
+	if got := recorder.Body.String(); !reflect.DeepEqual(got, exp) {
+		t.Errorf("Failed test while get account, \nexpected: %v\ngot: %v", got, exp)
+	}
+}

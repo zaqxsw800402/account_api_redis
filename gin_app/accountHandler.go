@@ -1,5 +1,6 @@
 package gin_app
 
+import "C"
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -94,7 +95,12 @@ func (h AccountHandler) getAccount(c *gin.Context) {
 	}
 
 	// 轉換accountId資料格式
-	id, _ := strconv.ParseUint(accountId, 10, 64)
+	id, err := strconv.ParseUint(accountId, 10, 64)
+	if err != nil {
+		//c.JSON(http.StatusBadRequest, err.Error())
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
 
 	// 讀取db裡的資料
 	account, appError := h.service.GetAccount(uint(id))
