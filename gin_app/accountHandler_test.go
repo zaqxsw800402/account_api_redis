@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"red/Redis"
+	"red/domain"
 	"red/dto"
 	"red/errs"
 	service2 "red/mocks/service"
@@ -114,3 +115,84 @@ func TestAccountHandler_NewAccount_BadRequest(t *testing.T) {
 		t.Error("Failed while testing the status code")
 	}
 }
+
+func TestAccountHandler_GetAccount_Success(t *testing.T) {
+	//Arrange
+	//set body
+	setUpAccount(t)
+	///customers/:id/account/:account_id"
+
+	request, _ := http.NewRequest(http.MethodGet, "/customers/3/account/1", nil)
+
+	expectedAccount := domain.Account{
+		AccountId:    1,
+		CustomerId:   3,
+		OpeningDate:  "2021-10-08 14:48:40",
+		AccountType:  "saving",
+		Amount:       6000,
+		Status:       "1",
+		Transactions: nil,
+	}
+
+	mockAccount.EXPECT().GetAccount(uint(1)).Return(&expectedAccount, nil)
+	router.GET("/customers/:id/account/:account_id", ah.getAccount)
+
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+
+	response := `{"account_id":1,"customer_id":3,"opening_date":"2021-10-08 14:48:40","account_type":"saving","amount":6000,"status":"1","transactions":null}`
+
+	if exp := recorder.Body.String(); exp != response {
+		t.Errorf("Failed test while get account, \nexpected: %v\ngot: %v", exp, response)
+	}
+}
+
+//func TestAccountHandler_getAccount(t *testing.T) {
+//	//type fields struct {
+//	//	service service.AccountService
+//	//	redisDB Redis.Database
+//	//}
+//	//type args struct {
+//	//	c *gin.Context
+//	//}
+//	tests := []struct {
+//		name   string
+//		fields fields
+//		args   args
+//	}{
+//		// TODO: Add test cases.
+//	}
+//	for _, tt := range tests {
+//		t.Run(tt.name, func(t *testing.T) {
+//			h := AccountHandler{
+//				service: tt.fields.service,
+//				redisDB: tt.fields.redisDB,
+//			}
+//		})
+//	}
+//}
+
+//func TestAccountHandler_makeTransaction(t *testing.T) {
+//	type fields struct {
+//		service service.AccountService
+//		redisDB Redis.Database
+//	}
+//	type args struct {
+//		c *gin.Context
+//	}
+//	tests := []struct {
+//		name   string
+//		fields fields
+//		args   args
+//	}{
+//		// TODO: Add test cases.
+//	}
+//	for _, tt := range tests {
+//		t.Run(tt.name, func(t *testing.T) {
+//			h := AccountHandler{
+//				service: tt.fields.service,
+//				redisDB: tt.fields.redisDB,
+//			}
+//		})
+//	}
+//}
