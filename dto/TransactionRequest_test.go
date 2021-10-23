@@ -19,7 +19,12 @@ func TestTransactionRequest_Validate(t *testing.T) {
 		fields fields
 		want   *errs.AppError
 	}{
-		// TODO: Add test cases.
+		{"SuccessDeposit", fields{uint(1), 6000, "deposit", "", "1"}, nil},
+		{"SuccessWithdraw", fields{uint(1), 6000, "withdrawal", "", "1"}, nil},
+		{"FailedAmount", fields{uint(1), -4000, "withdrawal", "", "1"},
+			errs.NewValidationError("Amount cannot be less than zero")},
+		{"FailedTransactionType", fields{uint(1), 6000, "wi", "", "1"},
+			errs.NewValidationError("transaction type can only be deposit or withdrawal")},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
