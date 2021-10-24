@@ -68,14 +68,13 @@ func (s DefaultAccountService) MakeTransaction(req dto.TransactionRequest) (*dto
 		return nil, err
 	}
 
-	// 判斷交易種類
+	// 取出帳戶金額
+	account, err := s.repo.FindBy(req.AccountId)
+	if err != nil {
+		return nil, err
+	}
+	// 判斷金額
 	if req.IsTransactionTypeWithdrawal() {
-		// 取出帳戶金額
-		account, err := s.repo.FindBy(req.AccountId)
-		if err != nil {
-			return nil, err
-		}
-		// 判斷金額
 		if !account.CanWithdraw(req.Amount) {
 			return nil, errs.NewValidationError("Insufficient balance in the account")
 		}

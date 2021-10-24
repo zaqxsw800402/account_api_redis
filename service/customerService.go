@@ -4,7 +4,6 @@ import (
 	"red/domain"
 	"red/dto"
 	"red/errs"
-	"red/logger"
 )
 
 //go:generate mockgen -destination=../mocks/service/mockCustomerService.go -package=service red/service CustomerService
@@ -21,13 +20,7 @@ type DefaultCustomerService struct {
 // GetAllCustomer 找尋所有顧客的資料
 func (s DefaultCustomerService) GetAllCustomer(status string) ([]dto.CustomerResponse, *errs.AppError) {
 	// 轉換req裡的資料
-	if status == "active" {
-		status = "1"
-	} else if status == "inactive" {
-		status = "0"
-	} else {
-		status = ""
-	}
+	status = transformStatus(status)
 
 	// 查詢資料
 	customers, err := s.repo.FindAll(status)
@@ -41,6 +34,17 @@ func (s DefaultCustomerService) GetAllCustomer(status string) ([]dto.CustomerRes
 		response = append(response, c.ToDto())
 	}
 	return response, nil
+}
+
+func transformStatus(status string) string {
+	if status == "active" {
+		status = "1"
+	} else if status == "inactive" {
+		status = "0"
+	} else {
+		status = ""
+	}
+	return status
 }
 
 // GetCustomer 找尋特定id的顧客資料
@@ -66,7 +70,6 @@ func (s DefaultCustomerService) SaveCustomer(req dto.CustomerRequest) (*dto.Cust
 	// 存入顧客資料
 	c, err := s.repo.Save(a)
 	if err != nil {
-		logger.Error("failed to save customer")
 		return nil, err
 	}
 	// 轉換格式為回傳需要的格式

@@ -147,16 +147,28 @@ func TestMakeTransaction_Validate_Failed(t *testing.T) {
 	}
 }
 
-func TestMakeTransaction_Type_Failed(t *testing.T) {
+func TestMakeTransaction_DepositSuccess(t *testing.T) {
 	//Arrange
+	ctrl := gomock.NewController(t)
+	mockRepo := domain2.NewMockAccountRepository(ctrl)
+	service := NewAccountService(mockRepo)
+
+	account := domain.Account{
+		AccountId:   1,
+		CustomerId:  1,
+		OpeningDate: "",
+		AccountType: "saving",
+		Amount:      6000,
+		Status:      "1",
+	}
+
 	req := dto.TransactionRequest{
 		AccountId:       1,
 		Amount:          7000,
 		TransactionType: "deposit",
 	}
-	ctrl := gomock.NewController(t)
-	mockRepo := domain2.NewMockAccountRepository(ctrl)
-	service := NewAccountService(mockRepo)
+	mockRepo.EXPECT().FindBy(req.AccountId).Return(&account, nil)
+
 	transaction := domain.Transaction{
 		AccountId:       req.AccountId,
 		Amount:          req.Amount,
@@ -164,32 +176,161 @@ func TestMakeTransaction_Type_Failed(t *testing.T) {
 		TransactionDate: time.Now().Format(dbTSLayout),
 	}
 
-	saveTransaction := &domain.Transaction{
+	returnTransaction := &domain.Transaction{
 		TransactionId:   1,
 		AccountId:       req.AccountId,
-		Amount:          12000,
+		Amount:          13000,
 		TransactionType: req.TransactionType,
 		TransactionDate: time.Now().Format(dbTSLayout),
 	}
 
-	dtoTransaction := &dto.TransactionResponse{
+	want := &dto.TransactionResponse{
 		TransactionId:   1,
 		AccountId:       req.AccountId,
-		Amount:          12000,
+		Amount:          13000,
 		TransactionType: req.TransactionType,
 		TransactionDate: time.Now().Format(dbTSLayout),
 	}
 
-	mockRepo.EXPECT().SaveTransaction(transaction).Return(saveTransaction, nil)
+	mockRepo.EXPECT().SaveTransaction(transaction).Return(returnTransaction, nil)
 	//mockRepo.SaveTransaction(transaction)
 	//Act
-	newTransaction, appError := service.MakeTransaction(req)
+	got, appError := service.MakeTransaction(req)
 	//Assert
 	if appError != nil {
 		t.Error("failed while test the account amount validation")
 	}
 
-	if !reflect.DeepEqual(dtoTransaction, newTransaction) {
-		t.Errorf("failed while test the transaction, expected:%v , got:%v", dtoTransaction, newTransaction)
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("failed while test the transaction, expected:%v , got:%v", want, got)
 	}
+}
+
+func TestMakeTransaction_SaveFailed(t *testing.T) {
+	//Arrange
+	ctrl := gomock.NewController(t)
+	mockRepo := domain2.NewMockAccountRepository(ctrl)
+	service := NewAccountService(mockRepo)
+
+	account := domain.Account{
+		AccountId:   1,
+		CustomerId:  1,
+		OpeningDate: "",
+		AccountType: "saving",
+		Amount:      6000,
+		Status:      "1",
+	}
+
+	req := dto.TransactionRequest{
+		AccountId:       1,
+		Amount:          7000,
+		TransactionType: "deposit",
+	}
+	mockRepo.EXPECT().FindBy(req.AccountId).Return(&account, nil)
+
+	transaction := domain.Transaction{
+		AccountId:       req.AccountId,
+		Amount:          req.Amount,
+		TransactionType: req.TransactionType,
+		TransactionDate: time.Now().Format(dbTSLayout),
+	}
+
+	mockRepo.EXPECT().SaveTransaction(transaction).Return(nil, errs.NewUnexpectedError("Unexpected database error"))
+	//mockRepo.SaveTransaction(transaction)
+	//Act
+	_, err := service.MakeTransaction(req)
+	//Assert
+	if want := errs.NewUnexpectedError("Unexpected database error"); !reflect.DeepEqual(err, want) {
+		t.Errorf("failed while check the account amount validation. \ngot: %v\nwant: %v", err, want)
+	}
+}
+
+func TestMakeTransaction_WithdrawalSuccess(t *testing.T) {
+	//Arrange
+	ctrl := gomock.NewController(t)
+	mockRepo := domain2.NewMockAccountRepository(ctrl)
+	service := NewAccountService(mockRepo)
+
+	account := domain.Account{
+		AccountId:   1,
+		CustomerId:  1,
+		OpeningDate: "",
+		AccountType: "saving",
+		Amount:      16000,
+		Status:      "1",
+	}
+
+	req := dto.TransactionRequest{
+		AccountId:       1,
+		Amount:          7000,
+		TransactionType: "withdrawal",
+	}
+	mockRepo.EXPECT().FindBy(req.AccountId).Return(&account, nil)
+
+	transaction := domain.Transaction{
+		AccountId:       req.AccountId,
+		Amount:          req.Amount,
+		TransactionType: req.TransactionType,
+		TransactionDate: time.Now().Format(dbTSLayout),
+	}
+
+	returnTransaction := &domain.Transaction{
+		TransactionId:   1,
+		AccountId:       req.AccountId,
+		Amount:          9000,
+		TransactionType: req.TransactionType,
+		TransactionDate: time.Now().Format(dbTSLayout),
+	}
+
+	want := &dto.TransactionResponse{
+		TransactionId:   1,
+		AccountId:       req.AccountId,
+		Amount:          9000,
+		TransactionType: req.TransactionType,
+		TransactionDate: time.Now().Format(dbTSLayout),
+	}
+
+	mockRepo.EXPECT().SaveTransaction(transaction).Return(returnTransaction, nil)
+	//mockRepo.SaveTransaction(transaction)
+	//Act
+	got, appError := service.MakeTransaction(req)
+	//Assert
+	if appError != nil {
+		t.Error("failed while test the account amount validation")
+	}
+
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("failed while test the transaction, expected:%v , got:%v", want, got)
+	}
+}
+
+func TestMakeTransaction_WithdrawalFailed(t *testing.T) {
+	//Arrange
+	ctrl := gomock.NewController(t)
+	mockRepo := domain2.NewMockAccountRepository(ctrl)
+	service := NewAccountService(mockRepo)
+
+	account := domain.Account{
+		AccountId:   1,
+		CustomerId:  1,
+		OpeningDate: "",
+		AccountType: "saving",
+		Amount:      16000,
+		Status:      "1",
+	}
+
+	req := dto.TransactionRequest{
+		AccountId:       1,
+		Amount:          17000,
+		TransactionType: "withdrawal",
+	}
+	mockRepo.EXPECT().FindBy(req.AccountId).Return(&account, nil)
+
+	//Act
+	_, err := service.MakeTransaction(req)
+	//Assert
+	if want := errs.NewValidationError("Insufficient balance in the account"); !reflect.DeepEqual(err, want) {
+		t.Errorf("failed while check the account amount validation. \ngot: %v\nwant: %v", err, want)
+	}
+
 }

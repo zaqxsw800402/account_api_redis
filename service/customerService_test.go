@@ -116,53 +116,87 @@ func TestDefaultCustomerService_GetCustomer_Failed(t *testing.T) {
 	}
 }
 
-func TestDefaultCustomerService_SaveCustomer(t *testing.T) {
-	type fields struct {
-		repo domain.CustomerRepository
+func TestDefaultCustomerService_SaveCustomer_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockRepo := domain2.NewMockCustomerRepository(ctrl)
+	service := NewCustomerService(mockRepo)
+
+	customer := domain.Customer{
+		Name:        "Ivy",
+		City:        "Taiwan",
+		Zipcode:     "23",
+		DateOfBirth: "2006-01-02",
 	}
-	type args struct {
-		req dto.CustomerRequest
+	want := &domain.Customer{
+		Id:          1,
+		Name:        "Ivy",
+		City:        "Taiwan",
+		Zipcode:     "23",
+		DateOfBirth: "2006-01-02",
+		Status:      "active",
+	}
+
+	mockRepo.EXPECT().Save(customer).Return(want, nil)
+
+	// Act
+	req := dto.CustomerRequest{
+		Name:        "Ivy",
+		City:        "Taiwan",
+		Zipcode:     "23",
+		DateOfBirth: "2006-01-02",
+	}
+	got, _ := service.SaveCustomer(req)
+	if !reflect.DeepEqual(got.Name, want.Name) {
+		t.Errorf("Test SaveCustomer: \ngot: %v\nwant %v", got, want)
+	}
+
+}
+
+func TestDefaultCustomerService_SaveCustomer_Failed(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockRepo := domain2.NewMockCustomerRepository(ctrl)
+	service := NewCustomerService(mockRepo)
+
+	customer := domain.Customer{
+		Name:        "Ivy",
+		City:        "Taiwan",
+		Zipcode:     "23",
+		DateOfBirth: "2006-01-02",
+	}
+
+	mockRepo.EXPECT().Save(customer).Return(nil, errs.NewUnexpectedError("Unexpected error from database"))
+
+	// Act
+	req := dto.CustomerRequest{
+		Name:        "Ivy",
+		City:        "Taiwan",
+		Zipcode:     "23",
+		DateOfBirth: "2006-01-02",
+	}
+	_, err := service.SaveCustomer(req)
+	if want := errs.NewUnexpectedError("Unexpected error from database"); !reflect.DeepEqual(err, want) {
+		t.Errorf("Test GetAllCustomer failed:\ngot: %v\nwant: %v\n", err, want)
+	}
+
+}
+
+func TestDefaultCustomerService_transformStatus(t *testing.T) {
+	type fields struct {
+		status string
 	}
 	tests := []struct {
 		name   string
 		fields fields
-		args   args
-		want   *dto.CustomerResponse
-		want1  *errs.AppError
+		want   string
 	}{
-		// TODO: Add test cases.
+		{"ActiveSuccess", fields{status: "active"}, "1"},
+		{"InactiveSuccess", fields{status: "inactive"}, "0"},
+		{"Success", fields{status: ""}, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := DefaultCustomerService{
-				repo: tt.fields.repo,
-			}
-			got, got1 := s.SaveCustomer(tt.args.req)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SaveCustomer() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("SaveCustomer() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
-func TestNewCustomerService(t *testing.T) {
-	type args struct {
-		repository domain.CustomerRepository
-	}
-	tests := []struct {
-		name string
-		args args
-		want DefaultCustomerService
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewCustomerService(tt.args.repository); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewCustomerService() = %v, want %v", got, tt.want)
+			if got := transformStatus(tt.fields.status); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Test transformStatus \ngot: %v, \nwant %v", got, tt.want)
 			}
 		})
 	}
