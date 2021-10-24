@@ -36,7 +36,7 @@ func setUp(t *testing.T) {
 	}
 }
 
-func TestCustomerHandlers_getAllCustomer_Success(t *testing.T) {
+func TestCustomerHandlers_GetAllCustomer_Success(t *testing.T) {
 	setUp(t)
 
 	dummyCustomer := []dto.CustomerResponse{
@@ -61,7 +61,7 @@ func TestCustomerHandlers_getAllCustomer_Success(t *testing.T) {
 
 }
 
-func TestCustomerHandlers_getAllCustomer_Failed_code500(t *testing.T) {
+func TestCustomerHandlers_GetAllCustomer_Failed_code500(t *testing.T) {
 	setUp(t)
 
 	mockCustomer.EXPECT().GetAllCustomer("").Return(nil, errs.NewUnexpectedError("Unexpected database error"))
@@ -81,7 +81,7 @@ func TestCustomerHandlers_getAllCustomer_Failed_code500(t *testing.T) {
 	}
 }
 
-func TestCustomerHandlers_newCustomers_Success(t *testing.T) {
+func TestCustomerHandlers_NewCustomers_Success(t *testing.T) {
 	// Arrange
 	setUp(t)
 	customer := dto.CustomerRequest{
@@ -126,7 +126,43 @@ func TestCustomerHandlers_newCustomers_Success(t *testing.T) {
 
 }
 
-func TestCustomerHandlers_newCustomers_Failed(t *testing.T) {
+func TestCustomerHandlers_NewCustomers_FailedSave(t *testing.T) {
+	// Arrange
+	setUp(t)
+	customer := dto.CustomerRequest{
+		Name:        "Ivy",
+		City:        "Taiwan",
+		Zipcode:     "110075",
+		DateOfBirth: "1978-12-15",
+	}
+
+	mockCustomer.EXPECT().SaveCustomer(customer).Return(nil, errs.NewUnexpectedError("Unexpected error from database"))
+	router.POST("/customers", ch.newCustomers)
+
+	body := `{
+		"name": "Ivy",
+		"city": "Taiwan",
+		"zipcode": "110075",
+		"date_of_birth": "1978-12-15"
+}`
+
+	b := bytes.NewBufferString(body)
+
+	// Act
+	request, _ := http.NewRequest(http.MethodPost, "/customers", b)
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+	response := `{"Message":"Unexpected error from database"}`
+
+	// Assert
+	fmt.Println(recorder.Body.String())
+	if exp := recorder.Body.String(); exp != response {
+		t.Errorf("Failed test while create save customer, \nexpected: %v\ngot: %v", exp, response)
+	}
+
+}
+
+func TestCustomerHandlers_NewCustomers_Failed(t *testing.T) {
 	// Arrange
 	setUp(t)
 	router.POST("/customers", ch.newCustomers)
@@ -150,7 +186,7 @@ func TestCustomerHandlers_newCustomers_Failed(t *testing.T) {
 	}
 }
 
-func TestCustomerHandlers_getCustomer_Success(t *testing.T) {
+func TestCustomerHandlers_GetCustomer_Success(t *testing.T) {
 	// Arrange
 	setUp(t)
 
@@ -181,7 +217,7 @@ func TestCustomerHandlers_getCustomer_Success(t *testing.T) {
 
 }
 
-func TestCustomerHandlers_getCustomer_BadRequest(t *testing.T) {
+func TestCustomerHandlers_GetCustomer_BadRequest(t *testing.T) {
 	// Arrange
 	setUp(t)
 

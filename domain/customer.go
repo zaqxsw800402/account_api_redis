@@ -5,12 +5,6 @@ import (
 	"red/errs"
 )
 
-type CustomerRepository interface {
-	FindAll(status string) ([]Customer, *errs.AppError)
-	ById(string) (*Customer, *errs.AppError)
-	Save(customer Customer) (*Customer, *errs.AppError)
-}
-
 type Customer struct {
 	Id          uint `gorm:"column:customer_id;primaryKey;autoIncrement"`
 	Name        string
@@ -19,6 +13,13 @@ type Customer struct {
 	DateOfBirth string
 	Status      string    `gorm:"default:1"`
 	Accounts    []Account `gorm:"foreignKey:CustomerId;references:Id"`
+}
+
+//go:generate mockgen -destination=../mocks/domain/mockCustomerRepository.go -package=domain red/domain CustomerRepository
+type CustomerRepository interface {
+	FindAll(status string) ([]Customer, *errs.AppError)
+	ById(string) (*Customer, *errs.AppError)
+	Save(customer Customer) (*Customer, *errs.AppError)
 }
 
 // ToDto 將資料更改成需要回傳的格式
