@@ -32,7 +32,7 @@ func (s DefaultCustomerService) GetAllCustomer(status string) ([]dto.CustomerRes
 	// 查詢資料
 	customers, err := s.repo.FindAll(status)
 	if err != nil {
-		logger.Error("failed to get all customers error")
+		//logger.Error("failed to get all customers error")
 		return nil, err
 	}
 	// 將資料格式轉為回傳的格式
@@ -47,7 +47,6 @@ func (s DefaultCustomerService) GetAllCustomer(status string) ([]dto.CustomerRes
 func (s DefaultCustomerService) GetCustomer(id string) (*dto.CustomerResponse, *errs.AppError) {
 	c, err := s.repo.ById(id)
 	if err != nil {
-		logger.Error("failed to get specific customer")
 		return nil, err
 	}
 

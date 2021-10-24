@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestDefaultCustomerService_GetAllCustomer(t *testing.T) {
+func TestDefaultCustomerService_GetAllCustomer_Success(t *testing.T) {
 	// Arrange
 	ctrl := gomock.NewController(t)
 	mockRepo := domain2.NewMockCustomerRepository(ctrl)
@@ -42,40 +42,77 @@ func TestDefaultCustomerService_GetAllCustomer(t *testing.T) {
 	// Act
 	got, _ := service.GetAllCustomer("active")
 	// Assert
-	if !reflect.DeepEqual(got[0].Status, want[0].Status) {
+	if !reflect.DeepEqual(got[0].Name, want[0].Name) {
 		t.Errorf("Test GetAllCustomer failed:\ngot: %v\nwant: %v\n", got, want)
 	}
 }
 
-func TestDefaultCustomerService_GetCustomer(t *testing.T) {
-	type fields struct {
-		repo domain.CustomerRepository
+func TestDefaultCustomerService_GetAllCustomer_Failed(t *testing.T) {
+	// Arrange
+	ctrl := gomock.NewController(t)
+	mockRepo := domain2.NewMockCustomerRepository(ctrl)
+	service := NewCustomerService(mockRepo)
+
+	mockRepo.EXPECT().FindAll("1").Return(nil, errs.NewUnexpectedError("Unexpected database error"))
+
+	// Act
+	_, err := service.GetAllCustomer("active")
+	// Assert
+	if want := errs.NewUnexpectedError("Unexpected database error"); !reflect.DeepEqual(err, want) {
+		t.Errorf("Test GetAllCustomer failed:\ngot: %v\nwant: %v\n", err, want)
 	}
-	type args struct {
-		id string
+}
+
+func TestDefaultCustomerService_GetCustomer_Success(t *testing.T) {
+	// Arrange
+	ctrl := gomock.NewController(t)
+	mockRepo := domain2.NewMockCustomerRepository(ctrl)
+	service := NewCustomerService(mockRepo)
+
+	customers := domain.Customer{
+		Id:          1,
+		Name:        "Ivy",
+		City:        "Taiwan",
+		Zipcode:     "23",
+		DateOfBirth: "2006-01-02",
+		Status:      "1",
 	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   *dto.CustomerResponse
-		want1  *errs.AppError
-	}{
-		// TODO: Add test cases.
+
+	mockRepo.EXPECT().ById("1").Return(&customers, nil)
+
+	// Act
+	got, _ := service.GetCustomer("1")
+
+	// Assert
+	want := dto.CustomerResponse{
+		Id:          1,
+		Name:        "Ivy",
+		City:        "Taiwan",
+		Zipcode:     "23",
+		DateOfBirth: "2006-01-02",
+		Status:      "active",
+		Accounts:    []domain.Account{},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := DefaultCustomerService{
-				repo: tt.fields.repo,
-			}
-			got, got1 := s.GetCustomer(tt.args.id)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetCustomer() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("GetCustomer() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
+
+	if !reflect.DeepEqual(got.Name, want.Name) {
+		t.Errorf("Test GetAllCustomer failed:\ngot: %v\nwant: %v\n", got, want)
+	}
+}
+
+func TestDefaultCustomerService_GetCustomer_Failed(t *testing.T) {
+	// Arrange
+	ctrl := gomock.NewController(t)
+	mockRepo := domain2.NewMockCustomerRepository(ctrl)
+	service := NewCustomerService(mockRepo)
+
+	mockRepo.EXPECT().ById("1").Return(nil, errs.NewUnexpectedError("Unexpected database error"))
+
+	// Act
+	_, err := service.GetCustomer("1")
+
+	// Assert
+	if want := errs.NewUnexpectedError("Unexpected database error"); !reflect.DeepEqual(err, want) {
+		t.Errorf("Test GetAllCustomer failed:\ngot: %v\nwant: %v\n", err, want)
 	}
 }
 
