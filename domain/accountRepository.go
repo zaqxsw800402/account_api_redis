@@ -34,7 +34,7 @@ func (d AccountRepositoryDB) FindBy(id uint) (*Account, *errs.AppError) {
 	// 在account表格裡預載入交易紀錄的資料，並且讀取特定id的資料
 	result := d.client.Table("Accounts").Preload("Transactions").Where("account_id = ?", id).Find(&a)
 	if err := result.Error; err != nil {
-		logger.Error("Error while querying accounts table" + err.Error())
+		//logger.Error("Error while querying accounts table" + err.Error())
 		if err == sql.ErrNoRows {
 			return nil, errs.NewNotFoundError("Account not found")
 		}
