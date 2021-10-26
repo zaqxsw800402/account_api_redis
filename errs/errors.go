@@ -7,6 +7,11 @@ type AppError struct {
 	Message string
 }
 
+func (e AppError) Error() string {
+	//panic("implement me")
+	return e.Message
+}
+
 func (e AppError) AsMessage() *AppError {
 	return &AppError{
 		Message: e.Message,

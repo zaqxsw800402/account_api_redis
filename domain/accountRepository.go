@@ -21,7 +21,7 @@ func (d AccountRepositoryDB) Save(a Account) (*Account, *errs.AppError) {
 	result := d.client.Create(&a)
 	err := result.Error
 	if err != nil {
-		logger.Error("Error while creating new account")
+		//logger.Error("Error while creating new account")
 		return nil, errs.NewUnexpectedError("Unexpected error from database")
 	}
 
