@@ -35,24 +35,19 @@ func setup() *gorm.DB {
 }
 
 func TestAccountRepositoryDb_Save_Success(t *testing.T) {
+	// Arrange
 	client := setup()
 	db := NewAccountRepositoryDb(client)
-	//rows := sqlmock.NewRows([]string{"customer_id","opening_date","account_type","amount","status","account_id"}).
-	//	AddRow(2,"2012-10-18","saving",6000,1,1)
-	//prep := mock.ExpectPrepare("^INSERT INTO accounts*")
-	//prep.ExpectExec().WithArgs(2,"2012-10-18 10:10:10","saving",6000,"1").
-	//	WillReturnResult(sqlmock.NewResult(1, 1))
 
 	mock.ExpectBegin()
 
 	mock.ExpectExec(
 		regexp.QuoteMeta("INSERT INTO `accounts` (`customer_id`,`opening_date`,`account_type`,`amount`,`status`,`account_id`) VALUES (?,?,?,?,?,?)")).
-		//`INSERT INTO "accounts" ("customer_id","opening_date","account_type","amount","status","account_id") VALUES (?,?,?,?,?,?)`).
 		WithArgs(2, "2012-10-18 10:10:10", "saving", 6000.00, "1", 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
-	//mock.ExpectQuery("^INSERT INTO accounts").WithArgs(1,2,"2012-10-18","saving",6000,"1").WillReturnRows(rows)
 
+	// Act
 	account := Account{
 		AccountId:   1,
 		CustomerId:  2,
@@ -62,6 +57,7 @@ func TestAccountRepositoryDb_Save_Success(t *testing.T) {
 		Status:      "1",
 	}
 	_, err := db.Save(account)
+	// Assert
 	if err != nil {
 		t.Error("test failed while save account into database")
 	}
@@ -201,5 +197,36 @@ func TestAccountRepositoryDb_SaveTransaction_Success(t *testing.T) {
 	// Assert
 	if err != nil {
 		t.Error("test failed while save transaction")
+	}
+}
+
+func TestAccountRepositoryDb_SaveTransaction_Failed(t *testing.T) {
+	// Arrange
+	client := setup()
+	db := NewAccountRepositoryDb(client)
+
+	mock.ExpectBegin()
+
+	mock.ExpectExec(
+		regexp.QuoteMeta("INSERT INTO `transactions` (`account_id`,`amount`,`transaction_type`,`transaction_date`,`transaction_id`) VALUES (?,?,?,?,?)")).
+		WithArgs(1, 6000, "deposit", "2012-10-18", 1).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	mock.ExpectCommit()
+
+	transaction := Transaction{
+		TransactionId:   1,
+		AccountId:       1,
+		Amount:          6000,
+		TransactionType: "deposit",
+		TransactionDate: "2012-10-18",
+	}
+
+	// Act
+	_, err := db.SaveTransaction(transaction)
+
+	// Assert
+	if want := errs.NewUnexpectedError("Unexpected database error"); !reflect.DeepEqual(err, want) {
+		t.Errorf("validating error failed while save transaction \ngot: %v\nwant: %v", err, want)
 	}
 }

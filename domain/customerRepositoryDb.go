@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"gorm.io/gorm"
 	"red/errs"
-	"red/logger"
 )
 
 type CustomerRepositoryDb struct {
@@ -21,7 +20,7 @@ func (d CustomerRepositoryDb) Save(c Customer) (*Customer, *errs.AppError) {
 	result := d.client.Create(&c)
 	err := result.Error
 	if err != nil {
-		logger.Error("Error while creating new customer")
+		//logger.Error("Error while creating new customer")
 		return nil, errs.NewUnexpectedError("Unexpected error from database")
 	}
 
@@ -34,7 +33,7 @@ func (d CustomerRepositoryDb) ById(id string) (*Customer, *errs.AppError) {
 	var c Customer
 	result := d.client.Table("Customers").Preload("Accounts").Where("customer_id = ?", id).Find(&c)
 	if err := result.Error; err != nil {
-		logger.Error("Error while querying customers table" + result.Error.Error())
+		//logger.Error("Error while querying customers table" + result.Error.Error())
 		if err == sql.ErrNoRows {
 			return nil, errs.NewNotFoundError("Customer not found")
 		}
@@ -59,7 +58,7 @@ func (d CustomerRepositoryDb) FindAll(status string) ([]Customer, *errs.AppError
 	}
 
 	if err != nil {
-		logger.Error("Error while querying customers table" + err.Error())
+		//logger.Error("Error while querying customers table" + err.Error())
 		return nil, errs.NewUnexpectedError("Unexpected database error")
 	}
 
