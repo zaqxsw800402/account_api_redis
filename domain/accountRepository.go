@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"gorm.io/gorm"
 	"red/errs"
-	"red/logger"
 )
 
 type AccountRepositoryDB struct {
@@ -49,14 +48,14 @@ func (d AccountRepositoryDB) SaveTransaction(t Transaction) (*Transaction, *errs
 	tx := d.client.Begin()
 	err := tx.Error
 	if err != nil {
-		logger.Error("Error while starting a new transaction for bank account transaction" + err.Error())
+		//logger.Error("Error while starting a new transaction for bank account transaction" + err.Error())
 		return nil, errs.NewUnexpectedError("Unexpected database error")
 	}
 	// 存入交易資訊
 	result := tx.Create(&t)
 	if err := result.Error; err != nil {
 		tx.Rollback()
-		logger.Error("Error while save transaction" + err.Error())
+		//logger.Error("Error while save transaction" + err.Error())
 		return nil, errs.NewUnexpectedError("Unexpected database error")
 	}
 
@@ -70,15 +69,15 @@ func (d AccountRepositoryDB) SaveTransaction(t Transaction) (*Transaction, *errs
 	// 更改帳戶金額失敗則回滾
 	if err := result.Error; err != nil {
 		tx.Rollback()
-		logger.Error("Error while update account amount" + err.Error())
-		return nil, errs.NewUnexpectedError("Unexpected database error")
+		//logger.Error("Error while update account amount" + err.Error())
+		return nil, errs.NewUnexpectedError("Unexpected database error while updating account amount failed")
 	}
 	// 進行提交
 	result = tx.Commit()
 	if err = result.Error; err != nil {
 		tx.Rollback()
-		logger.Error("Error while committing transaction for bank account" + err.Error())
-		return nil, errs.NewUnexpectedError("Unexpected database error")
+		//logger.Error("Error while committing transaction for bank account" + err.Error())
+		return nil, errs.NewUnexpectedError("Unexpected database error while saving transaction commit failed ")
 	}
 
 	// 查詢帳戶金額

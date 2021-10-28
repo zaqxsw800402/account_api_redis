@@ -34,7 +34,7 @@ func setup() *gorm.DB {
 	return client
 }
 
-func TestSave_Success(t *testing.T) {
+func TestAccountRepositoryDb_Save_Success(t *testing.T) {
 	client := setup()
 	db := NewAccountRepositoryDb(client)
 	//rows := sqlmock.NewRows([]string{"customer_id","opening_date","account_type","amount","status","account_id"}).
@@ -67,7 +67,7 @@ func TestSave_Success(t *testing.T) {
 	}
 }
 
-func TestSave_Failed(t *testing.T) {
+func TestAccountRepositoryDb_Save_Failed(t *testing.T) {
 	// Arrange
 	client := setup()
 	db := NewAccountRepositoryDb(client)
@@ -95,12 +95,12 @@ func TestSave_Failed(t *testing.T) {
 	}
 }
 
-func TestFindBy_Success(t *testing.T) {
+func TestAccountRepositoryDb_FindBy_Success(t *testing.T) {
 	// Arrange
 	client := setup()
+	db := NewAccountRepositoryDb(client)
 	rows := sqlmock.NewRows([]string{"customer_id", "opening_date", "account_type", "amount", "status", "account_id"}).
 		AddRow(2, "2012-10-18", "saving", 6000, 1, 1)
-	db := NewAccountRepositoryDb(client)
 
 	transactionRows := sqlmock.NewRows([]string{"transaction_id", "account_id", "amount", "transaction_type", "transaction_date"}).
 		AddRow(1, 1, 6000, "deposit", "2012-10-18")
@@ -108,6 +108,7 @@ func TestFindBy_Success(t *testing.T) {
 	mock.ExpectQuery(
 		"^SELECT \\* FROM `Accounts` WHERE account_id = \\?").
 		WillReturnRows(rows)
+
 	mock.ExpectQuery(
 		"^SELECT \\* FROM `transactions` WHERE `transactions`.`account_id` = \\?").
 		WithArgs(1).
@@ -122,7 +123,7 @@ func TestFindBy_Success(t *testing.T) {
 	fmt.Println("error:", err)
 }
 
-func TestFindBy_Failed(t *testing.T) {
+func TestAccountRepositoryDb_FindBy_Failed(t *testing.T) {
 	// Arrange
 	client := setup()
 	db := NewAccountRepositoryDb(client)
@@ -149,4 +150,56 @@ func TestFindBy_Failed(t *testing.T) {
 		t.Errorf("test failed while get account from database got: %v\nwant: %v", err, want)
 	}
 	fmt.Println("error ", err)
+}
+
+func TestAccountRepositoryDb_SaveTransaction_Success(t *testing.T) {
+	// Arrange
+	client := setup()
+	db := NewAccountRepositoryDb(client)
+
+	mock.ExpectBegin()
+
+	mock.ExpectExec(
+		regexp.QuoteMeta("INSERT INTO `transactions` (`account_id`,`amount`,`transaction_type`,`transaction_date`,`transaction_id`) VALUES (?,?,?,?,?)")).
+		WithArgs(1, 6000.00, "deposit", "2012-10-18", 1).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	mock.ExpectExec(
+		regexp.QuoteMeta("UPDATE `accounts` SET `amount`=amount + ? WHERE `account_id` = ?")).
+		WithArgs(6000.00, 1).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	mock.ExpectCommit()
+
+	rows := sqlmock.NewRows([]string{"customer_id", "opening_date", "account_type", "amount", "status", "account_id"}).
+		AddRow(1, "2012-10-18", "saving", 12000, 1, 1)
+
+	mock.ExpectQuery(
+		"^SELECT \\* FROM `Accounts` WHERE account_id = \\?").
+		WithArgs(1).
+		WillReturnRows(rows)
+
+	transactionRows := sqlmock.NewRows([]string{"transaction_id", "account_id", "amount", "transaction_type", "transaction_date"}).
+		AddRow(1, 1, 6000, "deposit", "2012-10-18")
+
+	mock.ExpectQuery(
+		"^SELECT \\* FROM `transactions` WHERE `transactions`.`account_id` = \\?").
+		WithArgs(1).
+		WillReturnRows(transactionRows)
+
+	transaction := Transaction{
+		TransactionId:   1,
+		AccountId:       1,
+		Amount:          6000,
+		TransactionType: "deposit",
+		TransactionDate: "2012-10-18",
+	}
+
+	// Act
+	_, err := db.SaveTransaction(transaction)
+
+	// Assert
+	if err != nil {
+		t.Error("test failed while save transaction")
+	}
 }
