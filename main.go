@@ -7,5 +7,5 @@ import (
 
 func main() {
 	gin_app.Start()
-	fmt.Println("Start!")
+	fmt.Println("Start")
 }
