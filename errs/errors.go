@@ -8,7 +8,6 @@ type AppError struct {
 }
 
 func (e AppError) Error() string {
-	//panic("implement me")
 	return e.Message
 }
 
