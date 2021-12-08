@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
-	"red/dto"
-	"red/errs"
+	"red/cmd/api/dto"
+	"red/cmd/api/errs"
 	"time"
 )
 

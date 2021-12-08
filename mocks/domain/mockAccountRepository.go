@@ -5,8 +5,8 @@
 package domain
 
 import (
-	domain "red/domain"
-	errs "red/errs"
+	domain2 "red/cmd/api/domain"
+	"red/cmd/api/errs"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -36,10 +36,10 @@ func (m *MockAccountRepository) EXPECT() *MockAccountRepositoryMockRecorder {
 }
 
 // FindBy mocks base method.
-func (m *MockAccountRepository) FindBy(arg0 uint) (*domain.Account, *errs.AppError) {
+func (m *MockAccountRepository) ByID(arg0 uint) (*domain2.Account, *errs.AppError) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindBy", arg0)
-	ret0, _ := ret[0].(*domain.Account)
+	ret := m.ctrl.Call(m, "ByID", arg0)
+	ret0, _ := ret[0].(*domain2.Account)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
 }
@@ -47,14 +47,14 @@ func (m *MockAccountRepository) FindBy(arg0 uint) (*domain.Account, *errs.AppErr
 // FindBy indicates an expected call of FindBy.
 func (mr *MockAccountRepositoryMockRecorder) FindBy(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindBy", reflect.TypeOf((*MockAccountRepository)(nil).FindBy), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ByID", reflect.TypeOf((*MockAccountRepository)(nil).ByID), arg0)
 }
 
 // Save mocks base method.
-func (m *MockAccountRepository) Save(arg0 domain.Account) (*domain.Account, *errs.AppError) {
+func (m *MockAccountRepository) Save(arg0 domain2.Account) (*domain2.Account, *errs.AppError) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", arg0)
-	ret0, _ := ret[0].(*domain.Account)
+	ret := m.ctrl.Call(m, "SaveUser", arg0)
+	ret0, _ := ret[0].(*domain2.Account)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
 }
@@ -62,14 +62,14 @@ func (m *MockAccountRepository) Save(arg0 domain.Account) (*domain.Account, *err
 // Save indicates an expected call of Save.
 func (mr *MockAccountRepositoryMockRecorder) Save(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockAccountRepository)(nil).Save), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUser", reflect.TypeOf((*MockAccountRepository)(nil).Save), arg0)
 }
 
 // SaveTransaction mocks base method.
-func (m *MockAccountRepository) SaveTransaction(arg0 domain.Transaction) (*domain.Transaction, *errs.AppError) {
+func (m *MockAccountRepository) SaveTransaction(arg0 domain2.Transaction) (*domain2.Transaction, *errs.AppError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveTransaction", arg0)
-	ret0, _ := ret[0].(*domain.Transaction)
+	ret0, _ := ret[0].(*domain2.Transaction)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
 }

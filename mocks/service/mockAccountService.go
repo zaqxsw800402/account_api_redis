@@ -5,9 +5,9 @@
 package service
 
 import (
-	domain "red/domain"
-	dto "red/dto"
-	errs "red/errs"
+	"red/cmd/api/domain"
+	dto2 "red/cmd/api/dto"
+	"red/cmd/api/errs"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -52,10 +52,10 @@ func (mr *MockAccountServiceMockRecorder) GetAccount(arg0 interface{}) *gomock.C
 }
 
 // MakeTransaction mocks base method.
-func (m *MockAccountService) MakeTransaction(arg0 dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError) {
+func (m *MockAccountService) MakeTransaction(arg0 dto2.TransactionRequest) (*dto2.TransactionResponse, *errs.AppError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MakeTransaction", arg0)
-	ret0, _ := ret[0].(*dto.TransactionResponse)
+	ret0, _ := ret[0].(*dto2.TransactionResponse)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
 }
@@ -67,10 +67,10 @@ func (mr *MockAccountServiceMockRecorder) MakeTransaction(arg0 interface{}) *gom
 }
 
 // NewAccount mocks base method.
-func (m *MockAccountService) NewAccount(arg0 dto.NewAccountRequest) (*dto.NewAccountResponse, *errs.AppError) {
+func (m *MockAccountService) NewAccount(arg0 dto2.NewAccountRequest) (*dto2.NewAccountResponse, *errs.AppError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewAccount", arg0)
-	ret0, _ := ret[0].(*dto.NewAccountResponse)
+	ret0, _ := ret[0].(*dto2.NewAccountResponse)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
 }

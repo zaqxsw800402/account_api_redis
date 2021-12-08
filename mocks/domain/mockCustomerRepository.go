@@ -5,8 +5,8 @@
 package domain
 
 import (
-	domain "red/domain"
-	errs "red/errs"
+	"red/cmd/api/domain"
+	"red/cmd/api/errs"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -36,9 +36,9 @@ func (m *MockCustomerRepository) EXPECT() *MockCustomerRepositoryMockRecorder {
 }
 
 // ById mocks base method.
-func (m *MockCustomerRepository) ById(arg0 string) (*domain.Customer, *errs.AppError) {
+func (m *MockCustomerRepository) ByID(arg0 string) (*domain.Customer, *errs.AppError) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ById", arg0)
+	ret := m.ctrl.Call(m, "ByID", arg0)
 	ret0, _ := ret[0].(*domain.Customer)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
@@ -47,7 +47,7 @@ func (m *MockCustomerRepository) ById(arg0 string) (*domain.Customer, *errs.AppE
 // ById indicates an expected call of ById.
 func (mr *MockCustomerRepositoryMockRecorder) ById(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ById", reflect.TypeOf((*MockCustomerRepository)(nil).ById), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ByID", reflect.TypeOf((*MockCustomerRepository)(nil).ByID), arg0)
 }
 
 // FindAll mocks base method.
@@ -68,7 +68,7 @@ func (mr *MockCustomerRepositoryMockRecorder) FindAll(arg0 interface{}) *gomock.
 // Save mocks base method.
 func (m *MockCustomerRepository) Save(arg0 domain.Customer) (*domain.Customer, *errs.AppError) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", arg0)
+	ret := m.ctrl.Call(m, "SaveUser", arg0)
 	ret0, _ := ret[0].(*domain.Customer)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
@@ -77,5 +77,5 @@ func (m *MockCustomerRepository) Save(arg0 domain.Customer) (*domain.Customer, *
 // Save indicates an expected call of Save.
 func (mr *MockCustomerRepositoryMockRecorder) Save(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockCustomerRepository)(nil).Save), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUser", reflect.TypeOf((*MockCustomerRepository)(nil).Save), arg0)
 }

@@ -5,8 +5,8 @@
 package service
 
 import (
-	dto "red/dto"
-	errs "red/errs"
+	"red/cmd/api/dto"
+	"red/cmd/api/errs"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"

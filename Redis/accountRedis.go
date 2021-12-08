@@ -2,7 +2,7 @@ package Redis
 
 import (
 	"fmt"
-	"red/domain"
+	"red/cmd/api/domain"
 	"red/logger"
 	"time"
 )
