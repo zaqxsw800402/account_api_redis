@@ -21,12 +21,7 @@ type config struct {
 	db   struct {
 		dsn string
 	}
-	//smtp struct {
-	//	host     string
-	//	port     int
-	//	username string
-	//	password string
-	//}
+
 	secretKey string
 	frontend  string
 }
@@ -76,6 +71,8 @@ func main() {
 	//cfg.smtp.username = os.Getenv("Username")
 	//cfg.smtp.password = os.Getenv("Password")
 	//cfg.secretKey = os.Getenv("Secret")
+
+	//123
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
