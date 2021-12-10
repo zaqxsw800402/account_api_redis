@@ -9,6 +9,7 @@ import (
 
 func (app *application) routes() http.Handler {
 	server := gin.Default()
+	23
 
 	mux := chi.NewRouter()
 	mux.Use(SessionLoad)
