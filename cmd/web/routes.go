@@ -1,12 +1,15 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 )
 
 func (app *application) routes() http.Handler {
+	server := gin.Default()
+
 	mux := chi.NewRouter()
 	mux.Use(SessionLoad)
 
