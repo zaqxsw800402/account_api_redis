@@ -3,7 +3,9 @@ package domain
 import (
 	"database/sql"
 	"gorm.io/gorm"
+	"net/http"
 	"red/cmd/api/errs"
+	"strconv"
 )
 
 type CustomerRepositoryDb struct {
@@ -27,11 +29,29 @@ func (d CustomerRepositoryDb) Save(c Customer) (*Customer, *errs.AppError) {
 	return &c, nil
 }
 
+func (d CustomerRepositoryDb) Update(c Customer) (*Customer, *errs.AppError) {
+	// 存入資訊
+	result := d.client.Model(&Customer{}).Updates(Customer{
+		Name:        c.Name,
+		City:        c.City,
+		Zipcode:     c.Zipcode,
+		DateOfBirth: c.DateOfBirth,
+	})
+	err := result.Error
+	if err != nil {
+		//logger.Error("Error while creating new customer")
+		return nil, errs.NewUnexpectedError("Unexpected error from database when updating customer")
+	}
+
+	return &c, nil
+}
+
 // ById 找尋特定ID的顧客
 func (d CustomerRepositoryDb) ByID(id string) (*Customer, *errs.AppError) {
 	// 在customers的表格裡，先預載入account的資料，並讀取特定id的資料
 	var c Customer
-	result := d.client.Table("Customers").Preload("Accounts").Where("customer_id = ?", id).Find(&c)
+	//result := d.client.Table("Customers").Preload("Accounts").Where("customer_id = ?", id).Find(&c)
+	result := d.client.Table("Customers").Where("customer_id = ?", id).Find(&c)
 	if err := result.Error; err != nil {
 		//logger.Error("Error while querying customers table" + result.Error.Error())
 		if err == sql.ErrNoRows {
@@ -63,4 +83,17 @@ func (d CustomerRepositoryDb) FindAll(status string) ([]Customer, *errs.AppError
 	}
 
 	return customers, nil
+}
+
+func (d CustomerRepositoryDb) Delete(id string) *errs.AppError {
+	i, err := strconv.ParseUint(id, 10, 10)
+
+	if err != nil {
+		return &errs.AppError{
+			Code:    http.StatusBadRequest,
+			Message: "could not convert customer id to int",
+		}
+	}
+	d.client.Model(&Customer{}).Where("customer_id = ?", uint(i)).Updates(Customer{Status: "0"})
+	return nil
 }

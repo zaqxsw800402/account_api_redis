@@ -3,13 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/alexedwards/scs/v2"
 	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
-	"red/cmd/api/gin_app"
-	"red/internal/driver"
-	"red/internal/models"
+	"red/Redis"
+	"red/cmd/api/domain"
+	"red/cmd/api/service"
 	"time"
 )
 
@@ -21,12 +22,7 @@ type config struct {
 	db   struct {
 		dsn string
 	}
-	//smtp struct {
-	//	host     string
-	//	port     int
-	//	username string
-	//	password string
-	//}
+
 	secretKey string
 	frontend  string
 }
@@ -36,7 +32,11 @@ type application struct {
 	infoLog  *log.Logger
 	errorLog *log.Logger
 	version  string
-	DB       models.DBModel
+	ch       CustomerHandler
+	ah       AccountHandler
+	uh       UserHandlers
+	redisDB  Redis.Database
+	session  *scs.SessionManager
 }
 
 func (app *application) serve() error {
@@ -64,9 +64,15 @@ func main() {
 
 	var cfg config
 
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbName := os.Getenv("DB_NAME")
+	cfg.db.dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=false", dbUser, dbPassword, dbHost, dbPort, dbName)
+
 	flag.IntVar(&cfg.port, "port", 4001, "Server port to listen on")
 	flag.StringVar(&cfg.env, "env", "development", "Application environment {development|production|maintenance}")
-	flag.StringVar(&cfg.db.dsn, "dsn", "trevor:secret@tcp(localhost:3306)/widgets?parseTime=true&tls=false", "DSN")
 	flag.StringVar(&cfg.frontend, "frontend", "http://localhost:4000", "url to frontend")
 
 	flag.Parse()
@@ -80,18 +86,37 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	conn, err := driver.OpenDb(cfg.db.dsn)
+	dbClient := domain.GetDBClient(cfg.db.dsn)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
-	defer conn.Close()
+
+	customerRepositoryDb := domain.NewCustomerRepositoryDb(dbClient)
+	accountRepositoryDb := domain.NewAccountRepositoryDb(dbClient)
+	userRepositoryDb := domain.NewUserRepositoryDb(dbClient)
+
+	//建立redis
+	redisDB := Redis.NewRedisDb()
+
+	// Get Session
+	session := newSession(dbClient)
+
+	//建立各個Handlers
+	//ch := CustomerHandler{service.NewCustomerService(customerRepositoryDb)}
+	ch := CustomerHandler{service: service.NewCustomerService(customerRepositoryDb)}
+	ah := AccountHandler{service: service.NewAccountService(accountRepositoryDb)}
+	uh := UserHandlers{service: service.NewUserService(userRepositoryDb)}
 
 	app := &application{
 		config:   cfg,
 		infoLog:  infoLog,
 		errorLog: errorLog,
 		version:  version,
-		DB:       models.DBModel{DB: conn},
+		ch:       ch,
+		ah:       ah,
+		uh:       uh,
+		redisDB:  redisDB,
+		session:  session,
 	}
 
 	err = app.serve()

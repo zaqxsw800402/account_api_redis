@@ -1,4 +1,4 @@
-package gin_app
+package main
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ import (
 )
 
 var router *gin.Engine
-var ch CustomerHandlers
+var ch CustomerHandler
 var ah AccountHandler
 var mockCustomer *service2.MockCustomerService
 var mockAccount *service2.MockAccountService
@@ -29,7 +29,7 @@ func setUp(t *testing.T) {
 	client, _ := redismock.NewClientMock()
 	db := Redis.NewRedisDb(client)
 
-	ch = CustomerHandlers{
+	ch = CustomerHandler{
 		mockCustomer,
 		db,
 	}

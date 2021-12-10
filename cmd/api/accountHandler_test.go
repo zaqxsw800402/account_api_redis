@@ -1,4 +1,4 @@
-package gin_app
+package main
 
 import (
 	"bytes"
@@ -42,13 +42,13 @@ func TestAccountHandler_NewAccount_Success(t *testing.T) {
 	b := bytes.NewBufferString(body)
 	request, _ := http.NewRequest(http.MethodPost, "/customers/3/account", b)
 
-	account := dto2.NewAccountRequest{
+	account := dto2.AccountRequest{
 		CustomerId:  3,
 		AccountType: "saving",
 		Amount:      6000,
 	}
 
-	expectedAccount := dto2.NewAccountResponse{
+	expectedAccount := dto2.AccountResponse{
 		AccountId: 1,
 	}
 
@@ -77,7 +77,7 @@ func TestAccountHandler_NewAccount_FailedCreate(t *testing.T) {
 	b := bytes.NewBufferString(body)
 	request, _ := http.NewRequest(http.MethodPost, "/customers/3/account", b)
 
-	account := dto2.NewAccountRequest{
+	account := dto2.AccountRequest{
 		CustomerId:  3,
 		AccountType: "saving",
 		Amount:      6000,

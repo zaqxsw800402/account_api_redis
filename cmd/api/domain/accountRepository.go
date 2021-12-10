@@ -27,7 +27,7 @@ func (d AccountRepositoryDB) Save(a Account) (*Account, *errs.AppError) {
 	return &a, nil
 }
 
-// FindBy 找尋特定id的帳戶資料
+// ByID 找尋特定id的帳戶資料
 func (d AccountRepositoryDB) ByID(id uint) (*Account, *errs.AppError) {
 	var a Account
 	// 在account表格裡預載入交易紀錄的資料，並且讀取特定id的資料
@@ -40,6 +40,22 @@ func (d AccountRepositoryDB) ByID(id uint) (*Account, *errs.AppError) {
 		return nil, errs.NewUnexpectedError("Unexpected database error")
 	}
 	return &a, nil
+}
+
+// ByCustomerID 找尋特定id的帳戶資料
+func (d AccountRepositoryDB) ByCustomerID(id uint) ([]Account, *errs.AppError) {
+	var a []Account
+
+	result := d.client.Where("customer_id = ?", id).Find(&a)
+
+	if err := result.Error; err != nil {
+		//logger.Error("Error while querying accounts table" + err.Error())
+		if err == sql.ErrNoRows {
+			return nil, errs.NewNotFoundError("Account not found with customer_id")
+		}
+		return nil, errs.NewUnexpectedError("Unexpected database error when find account by using customer_id")
+	}
+	return a, nil
 }
 
 // SaveTransaction 紀錄交易資訊

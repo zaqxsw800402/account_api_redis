@@ -45,12 +45,12 @@ func TestAccount_ToNewAccountResponseDto(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   dto.NewAccountResponse
+		want   dto.AccountResponse
 	}{
 		{"Success_1", fields{1, 1, "2012-10-18", "saving", 5000, "status", nil},
-			dto.NewAccountResponse{AccountId: 1}},
+			dto.AccountResponse{AccountId: 1}},
 		{"Success_2", fields{2, 2, "2012-10-18", "saving", 5000, "status", nil},
-			dto.NewAccountResponse{AccountId: 2}},
+			dto.AccountResponse{AccountId: 2}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

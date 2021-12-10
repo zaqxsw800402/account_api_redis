@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/go-chi/chi/v5"
 	"net/http"
 	"red/internal/encryption"
 	"red/internal/urlsigner"
@@ -237,6 +238,38 @@ func (app *application) AllUsers(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) OneUser(w http.ResponseWriter, r *http.Request) {
 	if err := app.renderTemplate(w, r, "one-user", &templateData{}); err != nil {
+		app.errorLog.Print(err)
+	}
+}
+
+func (app *application) AllCustomers(w http.ResponseWriter, r *http.Request) {
+	if err := app.renderTemplate(w, r, "all-customers", &templateData{}); err != nil {
+		app.errorLog.Print(err)
+	}
+}
+
+func (app *application) OneCustomer(w http.ResponseWriter, r *http.Request) {
+	if err := app.renderTemplate(w, r, "one-customer", &templateData{}); err != nil {
+		app.errorLog.Print(err)
+	}
+}
+
+func (app *application) AllAccounts(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	stringMap := make(map[string]string)
+	stringMap["id"] = id
+	if err := app.renderTemplate(w, r, "all-accounts", &templateData{StringMap: stringMap}); err != nil {
+		app.errorLog.Print(err)
+	}
+}
+
+func (app *application) OneAccounts(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	accountId := chi.URLParam(r, "account_id")
+	stringMap := make(map[string]string)
+	stringMap["id"] = id
+	stringMap["account_id"] = accountId
+	if err := app.renderTemplate(w, r, "one-account", &templateData{StringMap: stringMap}); err != nil {
 		app.errorLog.Print(err)
 	}
 }

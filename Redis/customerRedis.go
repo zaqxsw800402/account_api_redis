@@ -22,8 +22,22 @@ type Database struct {
 	RC *redis.Client
 }
 
-func NewRedisDb(RC *redis.Client) Database {
-	return Database{RC}
+func NewRedisDb() Database {
+	return Database{getRedisClient()}
+}
+
+func getRedisClient() *redis.Client {
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+	//pong, err := client.Ping(ctx).Result()
+	//log.Println(pong)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	return client
 }
 
 //func init() {

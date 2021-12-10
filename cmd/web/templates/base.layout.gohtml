@@ -49,7 +49,7 @@
                                 Admin
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="/admin/virtual-terminal">Virtual Terminal</a></li>
+                                <li><a class="dropdown-item" href="/admin/all-customers">All Customers</a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
@@ -101,36 +101,6 @@
 
     <script>
 
-        {{if eq .IsAuthenticated 1}}
-        let socket;
-
-        document.addEventListener("DOMContentLoaded", function () {
-            socket = new WebSocket("ws://localhost:4000/ws")
-
-            socket.onopen = () => {
-                console.log("Successfully connected to websockets");
-            }
-
-                socket.onclose = event => {
-                };
-                socket.onerror = error => {
-                };
-                socket.onmessage = msg => {
-                    let data = JSON.parse(msg.data);
-
-                switch (data.action) {
-                    case "logout":
-                        if (data.user_id === {{.UserID}}) {
-                            logout();
-                        }
-                        break;
-                    default:
-                }
-            }
-
-        })
-        {{end}}
-
         function logout() {
             localStorage.removeItem("token");
             localStorage.removeItem("token_expiry");
@@ -140,7 +110,7 @@
         function checkAuth() {
             if (localStorage.getItem("token") === null) {
                 location.href = "/login";
-                return;
+
             } else {
                 let token = localStorage.getItem("token");
                 const myHeaders = new Headers();
@@ -164,6 +134,7 @@
                     })
             }
         }
+
     </script>
     {{block "js" .}}
 

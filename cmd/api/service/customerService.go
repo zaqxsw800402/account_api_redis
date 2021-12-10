@@ -4,17 +4,24 @@ import (
 	"red/cmd/api/domain"
 	"red/cmd/api/dto"
 	"red/cmd/api/errs"
+	"time"
 )
 
 //go:generate mockgen -destination=../mocks/service/mockCustomerService.go -package=service red/service CustomerService
 type CustomerService interface {
 	GetAllCustomer(string) ([]dto.CustomerResponse, *errs.AppError)
 	GetCustomer(string) (*dto.CustomerResponse, *errs.AppError)
-	SaveCustomer(customer dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError)
+	SaveCustomer(dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError)
+	UpdateCustomer(dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError)
+	DeleteCustomer(string) *errs.AppError
 }
 
 type DefaultCustomerService struct {
 	repo domain.CustomerRepository
+}
+
+func NewCustomerService(repository domain.CustomerRepository) DefaultCustomerService {
+	return DefaultCustomerService{repository}
 }
 
 // GetAllCustomer 找尋所有顧客的資料
@@ -61,14 +68,16 @@ func (s DefaultCustomerService) GetCustomer(id string) (*dto.CustomerResponse, *
 
 // SaveCustomer 存入顧客資料
 func (s DefaultCustomerService) SaveCustomer(req dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError) {
-	a := domain.Customer{
+	customer := domain.Customer{
 		Name:        req.Name,
 		City:        req.City,
 		Zipcode:     req.Zipcode,
 		DateOfBirth: req.DateOfBirth,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	}
 	// 存入顧客資料
-	c, err := s.repo.Save(a)
+	c, err := s.repo.Save(customer)
 	if err != nil {
 		return nil, err
 	}
@@ -77,6 +86,30 @@ func (s DefaultCustomerService) SaveCustomer(req dto.CustomerRequest) (*dto.Cust
 	return &response, nil
 }
 
-func NewCustomerService(repository domain.CustomerRepository) DefaultCustomerService {
-	return DefaultCustomerService{repository}
+func (s DefaultCustomerService) UpdateCustomer(req dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError) {
+	customer := domain.Customer{
+		Id:          uint(req.Id),
+		Name:        req.Name,
+		City:        req.City,
+		Zipcode:     req.Zipcode,
+		DateOfBirth: req.DateOfBirth,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+
+	c, err := s.repo.Update(customer)
+	if err != nil {
+		return nil, err
+	}
+
+	response := c.ToDto()
+	return &response, nil
+}
+
+func (s DefaultCustomerService) DeleteCustomer(id string) *errs.AppError {
+	err := s.repo.Delete(id)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -13,7 +13,7 @@ import (
 
 func TestNewAccount_Validate_Failed(t *testing.T) {
 	//Arrange
-	request := dto2.NewAccountRequest{
+	request := dto2.AccountRequest{
 		CustomerId:  2,
 		AccountType: "saving",
 		Amount:      0,
@@ -34,7 +34,7 @@ func TestNewAccount_Create_Fail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := domain2.NewMockAccountRepository(ctrl)
 	service := NewAccountService(mockRepo)
-	req := dto2.NewAccountRequest{
+	req := dto2.AccountRequest{
 		CustomerId:  2,
 		AccountType: "saving",
 		Amount:      6000,
@@ -61,7 +61,7 @@ func TestNewAccount_Create_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := domain2.NewMockAccountRepository(ctrl)
 	service := NewAccountService(mockRepo)
-	req := dto2.NewAccountRequest{
+	req := dto2.AccountRequest{
 		CustomerId:  2,
 		AccountType: "saving",
 		Amount:      6000,

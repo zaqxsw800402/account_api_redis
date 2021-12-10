@@ -7,13 +7,13 @@ import (
 )
 
 type User struct {
-	ID        int       `json:"id" gorm:"column:user_id;primaryKey;autoIncrement"`
-	FirstName string    `json:"first_name" gorm:"column:first_name"`
-	LastName  string    `json:"last_name" gorm:"column:last_name"`
-	Email     string    `json:"email" gorm:"column:email"`
-	Password  string    `json:"password" gorm:"column:password"`
-	CreatedAt time.Time `json:"-" gorm:"column:created_at"`
-	UpdatedAt time.Time `json:"-" gorm:"column:updated_at"`
+	ID        int       `gorm:"column:user_id;primaryKey;autoIncrement"`
+	FirstName string    `gorm:"column:first_name"`
+	LastName  string    `gorm:"column:last_name"`
+	Email     string    `gorm:"column:email"`
+	Password  string    `gorm:"column:password"`
+	CreatedAt time.Time `gorm:"column:created_at"`
+	UpdatedAt time.Time `gorm:"column:updated_at"`
 }
 
 type UserRepository interface {
@@ -25,7 +25,7 @@ type UserRepository interface {
 
 	UpdateToken(Token) (*Token, *errs.AppError)
 	SaveToken(Token) (*Token, *errs.AppError)
-	GetUserByToken(string) (*User, *errs.AppError)
+	GetUserWithToken(string) (*User, *errs.AppError)
 }
 
 func (u User) ToDto() dto.UserResponse {
@@ -34,8 +34,8 @@ func (u User) ToDto() dto.UserResponse {
 		FirstName: u.FirstName,
 		LastName:  u.LastName,
 		Email:     u.Email,
-		Password:  u.Password,
-		CreatedAt: u.CreatedAt,
-		UpdatedAt: u.UpdatedAt,
+		//Password:  u.Password,
+		//CreatedAt: u.CreatedAt,
+		//UpdatedAt: u.UpdatedAt,
 	}
 }

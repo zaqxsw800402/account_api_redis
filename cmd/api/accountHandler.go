@@ -1,10 +1,9 @@
-package gin_app
+package main
 
 import "C"
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"red/Redis"
 	dto2 "red/cmd/api/dto"
 	"red/cmd/api/service"
 	"red/logger"
@@ -13,14 +12,14 @@ import (
 
 type AccountHandler struct {
 	service service.AccountService
-	redisDB Redis.Database
+	//redisDB Redis.Database
 }
 
 // newAccount 申請新帳戶
 func (h AccountHandler) newAccount(c *gin.Context) {
 	// 讀取id的值
 	customerId := c.Param("id")
-	var request dto2.NewAccountRequest
+	var request dto2.AccountRequest
 	// 讀取BODY裡的資料
 	err := c.ShouldBindJSON(&request)
 	if err != nil {
@@ -54,11 +53,11 @@ func (h AccountHandler) makeTransaction(c *gin.Context) {
 	accountId := c.Param("account_id")
 
 	// 紀錄交易的次數
-	appError := h.redisDB.TransactionTimes(accountId)
-	if appError != nil {
-		c.JSON(appError.Code, appError.AsMessage())
-		return
-	}
+	//appError := h.redisDB.TransactionTimes(accountId)
+	//if appError != nil {
+	//	c.JSON(appError.Code, appError.AsMessage())
+	//	return
+	//}
 
 	// 讀取body裡的資料
 	var request dto2.TransactionRequest
@@ -89,10 +88,10 @@ func (h AccountHandler) getAccount(c *gin.Context) {
 	accountId := c.Param("account_id")
 
 	// 檢查Redis裡是否已經有資料
-	if account := h.redisDB.GetAccount(accountId); account != nil {
-		c.JSON(http.StatusOK, account)
-		return
-	}
+	//if account := h.redisDB.GetAccount(accountId); account != nil {
+	//	c.JSON(http.StatusOK, account)
+	//	return
+	//}
 
 	// 轉換accountId資料格式
 	id, err := strconv.ParseUint(accountId, 10, 64)
@@ -112,5 +111,36 @@ func (h AccountHandler) getAccount(c *gin.Context) {
 	}
 
 	// 將資料存進Redis
-	h.redisDB.SaveAccount(account)
+	//h.redisDB.SaveAccount(account)
+}
+
+// getAllAccount 讀取帳戶資料
+func (h AccountHandler) getAllAccount(c *gin.Context) {
+	customerId := c.Param("id")
+
+	// 檢查Redis裡是否已經有資料
+	//if account := h.redisDB.GetAccount(accountId); account != nil {
+	//	c.JSON(http.StatusOK, account)
+	//	return
+	//}
+
+	// 轉換accountId資料格式
+	id, err := strconv.ParseUint(customerId, 10, 64)
+	if err != nil {
+		//c.JSON(http.StatusBadRequest, err.Error())
+		badRequest(c, http.StatusBadRequest, err)
+		return
+	}
+
+	// 讀取db裡的資料
+	account, appError := h.service.GetAllAccount(uint(id))
+	if appError != nil {
+		c.JSON(appError.Code, appError.AsMessage())
+		return
+	} else {
+		c.JSON(http.StatusOK, account)
+	}
+
+	// 將資料存進Redis
+	//h.redisDB.SaveAccount(account)
 }

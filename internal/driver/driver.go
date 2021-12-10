@@ -6,22 +6,14 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"os"
-	"red/cmd/api/domain"
 	"red/internal/models"
 )
 
 func GetDBClient(dsn string) (*gorm.DB, error) {
 	// 讀取環境變數
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbName := os.Getenv("DB_NAME")
-
 	// 建立與資料庫的連結
 	db, err := gorm.Open(mysql.New(mysql.Config{
-		DSN: fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbHost, dbPort, dbName),
+		DSN: dsn,
 	}), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
@@ -33,10 +25,8 @@ func GetDBClient(dsn string) (*gorm.DB, error) {
 	}
 
 	//建立表格，如果沒有表格
-	err = db.AutoMigrate(&domain.Customer{}, &domain.Account{}, &domain.Transaction{}, &models.Token{}, &models.User{})
+	err = db.AutoMigrate(&models.Session{})
 	if err != nil {
-		//logger.Error("Failed to create tables" + err.Error())
-		//log.Println("Failed to create tables" + err.Error())
 		return nil, err
 	}
 

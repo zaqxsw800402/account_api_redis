@@ -11,9 +11,10 @@ const dbTSLayout = "2006-01-02 15:04:05"
 
 //go:generate mockgen -destination=../mocks/service/mockAccountService.go -package=service red/service AccountService
 type AccountService interface {
-	NewAccount(request dto.NewAccountRequest) (*dto.NewAccountResponse, *errs.AppError)
+	NewAccount(request dto.AccountRequest) (*dto.AccountResponse, *errs.AppError)
 	MakeTransaction(request dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError)
-	GetAccount(accountId uint) (*domain.Account, *errs.AppError)
+	GetAccount(accountId uint) (*dto.AccountResponse, *errs.AppError)
+	GetAllAccount(customerId uint) ([]dto.AccountResponse, *errs.AppError)
 }
 
 type DefaultAccountService struct {
@@ -26,17 +27,32 @@ func NewAccountService(repo domain.AccountRepository) DefaultAccountService {
 }
 
 // GetAccount 藉由repository讀取特定的帳戶資料
-func (s DefaultAccountService) GetAccount(accountId uint) (*domain.Account, *errs.AppError) {
+func (s DefaultAccountService) GetAccount(accountId uint) (*dto.AccountResponse, *errs.AppError) {
 	// 讀取特定帳戶ID的資料
 	account, err := s.repo.ByID(accountId)
 	if err != nil {
 		return nil, err
 	}
-	return account, nil
+	response := account.ToDto()
+	return &response, nil
+}
+
+func (s DefaultAccountService) GetAllAccount(accountId uint) ([]dto.AccountResponse, *errs.AppError) {
+	// 讀取特定帳戶ID的資料
+	accounts, err := s.repo.ByCustomerID(accountId)
+	if err != nil {
+		return nil, err
+	}
+
+	response := make([]dto.AccountResponse, 0)
+	for _, account := range accounts {
+		response = append(response, account.ToDto())
+	}
+	return response, nil
 }
 
 // NewAccount 建立新帳戶
-func (s DefaultAccountService) NewAccount(req dto.NewAccountRequest) (*dto.NewAccountResponse, *errs.AppError) {
+func (s DefaultAccountService) NewAccount(req dto.AccountRequest) (*dto.AccountResponse, *errs.AppError) {
 	// 檢查body裡的資料是否有效
 	err := req.Validate()
 	if err != nil {

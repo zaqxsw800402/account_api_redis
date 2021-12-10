@@ -10,7 +10,7 @@ type Token struct {
 	UserID    int64     `gorm:"column:user_id;primaryKey;autoIncrement"`
 	Name      string    `gorm:"column:name"`
 	Email     string    `gorm:"column:email"`
-	Hash      string    `gorm:"column:token_hash"`
+	Hash      []byte    `gorm:"column:token_hash"`
 	Expiry    time.Time `gorm:"column:expiry"`
 	CreatedAt time.Time `gorm:"column:created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at"`

@@ -67,10 +67,10 @@ func (mr *MockAccountServiceMockRecorder) MakeTransaction(arg0 interface{}) *gom
 }
 
 // NewAccount mocks base method.
-func (m *MockAccountService) NewAccount(arg0 dto2.NewAccountRequest) (*dto2.NewAccountResponse, *errs.AppError) {
+func (m *MockAccountService) NewAccount(arg0 dto2.AccountRequest) (*dto2.AccountResponse, *errs.AppError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewAccount", arg0)
-	ret0, _ := ret[0].(*dto2.NewAccountResponse)
+	ret0, _ := ret[0].(*dto2.AccountResponse)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
 }

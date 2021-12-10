@@ -28,7 +28,7 @@ func TestNewAccountRequest_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := NewAccountRequest{
+			r := AccountRequest{
 				CustomerId:  tt.fields.CustomerId,
 				AccountType: tt.fields.AccountType,
 				Amount:      tt.fields.Amount,
