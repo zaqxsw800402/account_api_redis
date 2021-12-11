@@ -2,11 +2,11 @@ package main
 
 import "C"
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	dto2 "red/cmd/api/dto"
+	"red/cmd/api/dto"
 	"red/cmd/api/service"
-	"red/logger"
 	"strconv"
 )
 
@@ -16,42 +16,38 @@ type AccountHandler struct {
 }
 
 // newAccount 申請新帳戶
-func (h AccountHandler) newAccount(c *gin.Context) {
+func (app *application) newAccount(c *gin.Context) {
 	// 讀取id的值
 	customerId := c.Param("id")
-	var request dto2.AccountRequest
+	var request dto.AccountRequest
 	// 讀取BODY裡的資料
 	err := c.ShouldBindJSON(&request)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		badRequest(c, http.StatusBadRequest, errors.New("amount must be a number"))
 		return
 	}
 
 	// 轉換id成uint格式
 	id, err := strconv.ParseUint(customerId, 10, 64)
 	if err != nil {
-		logger.Error("Failed to parse customerId " + err.Error())
-		c.JSON(http.StatusBadRequest, err.Error())
+		badRequest(c, http.StatusBadRequest, err)
 		return
 	}
 	request.CustomerId = uint(id)
 
 	// 建立新帳戶
-	account, appError := h.service.NewAccount(request)
+	_, appError := app.ah.service.NewAccount(request)
 	if appError != nil {
-		c.JSON(appError.Code, appError.AsMessage())
-	} else {
-		c.JSON(http.StatusOK, account)
+		//c.JSON(appError.Code, appError.AsMessage())
+		badRequest(c, appError.Code, appError)
+		return
 	}
 
+	jsonResp(c, http.StatusOK)
 }
 
 // makeTransaction 申請交易
-func (h AccountHandler) makeTransaction(c *gin.Context) {
-	// 讀取資料
-	customerId := c.Param("id")
-	accountId := c.Param("account_id")
-
+func (app *application) makeTransaction(c *gin.Context) {
 	// 紀錄交易的次數
 	//appError := h.redisDB.TransactionTimes(accountId)
 	//if appError != nil {
@@ -60,32 +56,28 @@ func (h AccountHandler) makeTransaction(c *gin.Context) {
 	//}
 
 	// 讀取body裡的資料
-	var request dto2.TransactionRequest
+	var request dto.TransactionRequest
 	err := c.ShouldBindJSON(&request)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	// 轉換accountId的資料格式
-	id, _ := strconv.ParseUint(accountId, 10, 64)
-	// 輸入資料到request裡
-	request.AccountId = uint(id)
-	request.CustomerId = customerId
-
 	// 申請交易
-	account, appError := h.service.MakeTransaction(request)
+	_, appError := app.ah.service.MakeTransaction(request)
 	if appError != nil {
-		c.JSON(appError.Code, appError.AsMessage())
+		//c.JSON(appError.Code, appError.AsMessage())
+		badRequest(c, appError.Code, appError)
 	} else {
-		c.JSON(http.StatusOK, account)
+		//c.JSON(http.StatusOK, account)
+		jsonResp(c, http.StatusOK)
 	}
-
 }
 
-// getAccount 讀取帳戶資料
-func (h AccountHandler) getAccount(c *gin.Context) {
+// getAllTransactions 讀取帳戶資料
+func (app *application) getAllTransactions(c *gin.Context) {
 	accountId := c.Param("account_id")
+	customerId := c.Param("id")
 
 	// 檢查Redis裡是否已經有資料
 	//if account := h.redisDB.GetAccount(accountId); account != nil {
@@ -100,14 +92,21 @@ func (h AccountHandler) getAccount(c *gin.Context) {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
+	cId, err := strconv.ParseUint(customerId, 10, 64)
+	if err != nil {
+		//c.String(http.StatusBadRequest, err.Error())
+		badRequest(c, http.StatusBadRequest, err)
+		return
+	}
 
 	// 讀取db裡的資料
-	account, appError := h.service.GetAccount(uint(id))
+	transactions, appError := app.ah.service.GetALlTransactions(uint(cId), uint(id))
 	if appError != nil {
-		c.JSON(appError.Code, appError.AsMessage())
+		//c.JSON(appError.Code, appError.AsMessage())
+		badRequest(c, appError.Code, appError)
 		return
 	} else {
-		c.JSON(http.StatusOK, account)
+		c.JSON(http.StatusOK, transactions)
 	}
 
 	// 將資料存進Redis
@@ -115,7 +114,7 @@ func (h AccountHandler) getAccount(c *gin.Context) {
 }
 
 // getAllAccount 讀取帳戶資料
-func (h AccountHandler) getAllAccount(c *gin.Context) {
+func (app *application) getAllAccount(c *gin.Context) {
 	customerId := c.Param("id")
 
 	// 檢查Redis裡是否已經有資料
@@ -133,13 +132,60 @@ func (h AccountHandler) getAllAccount(c *gin.Context) {
 	}
 
 	// 讀取db裡的資料
-	account, appError := h.service.GetAllAccount(uint(id))
+	accounts, appError := app.ah.service.GetAllAccount(uint(id))
 	if appError != nil {
 		c.JSON(appError.Code, appError.AsMessage())
 		return
 	} else {
-		c.JSON(http.StatusOK, account)
+		c.JSON(http.StatusOK, accounts)
 	}
+
+	// 將資料存進Redis
+	//h.redisDB.SaveAccount(account)
+}
+
+func (app *application) getAllAccountWithUserID(c *gin.Context) {
+	userID := c.GetInt("userID")
+
+	customers, appError := app.ch.service.GetAllCustomer(userID)
+	if appError != nil {
+		c.JSON(appError.Code, appError.AsMessage())
+		return
+	}
+	// 檢查Redis裡是否已經有資料
+	//if account := h.redisDB.GetAccount(accountId); account != nil {
+	//	c.JSON(http.StatusOK, account)
+	//	return
+	//}
+
+	type Response struct {
+		AccountId   uint    ` json:"account_id"`
+		AccountType string  ` json:"account_type"`
+		Amount      float64 ` json:"amount"`
+		Status      string  ` json:"status"`
+		CustomerId  uint    ` json:"customer_id"`
+	}
+
+	resp := make([]Response, 0)
+	for _, customer := range customers {
+		accounts, appError := app.ah.service.GetAllAccount(customer.Id)
+		if appError != nil {
+			c.JSON(appError.Code, appError.AsMessage())
+			return
+		}
+		for _, a := range accounts {
+			r := Response{
+				AccountId:   a.AccountId,
+				AccountType: a.AccountType,
+				Amount:      a.Amount,
+				Status:      a.Status,
+				CustomerId:  customer.Id,
+			}
+			resp = append(resp, r)
+		}
+
+	}
+	c.JSON(http.StatusOK, resp)
 
 	// 將資料存進Redis
 	//h.redisDB.SaveAccount(account)

@@ -4,6 +4,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
+	"time"
 )
 
 func GetDBClient(dsn string) *gorm.DB {
@@ -18,13 +19,13 @@ func GetDBClient(dsn string) *gorm.DB {
 		log.Println("failed to connect db " + err.Error())
 	}
 
-	//sqlDB, _ := db.DB()
-	//// 最多閒置數量
-	//sqlDB.SetMaxIdleConns(10)
-	//// 最多連接數量
-	//sqlDB.SetMaxOpenConns(10)
-	//// 等待醉酒時間
-	//sqlDB.SetConnMaxIdleTime(time.Hour)
+	sqlDB, _ := db.DB()
+	// 最多閒置數量
+	sqlDB.SetMaxIdleConns(10)
+	// 最多連接數量
+	sqlDB.SetMaxOpenConns(10)
+	// 等待醉酒時間
+	sqlDB.SetConnMaxIdleTime(time.Hour)
 
 	//建立表格，如果沒有表格
 	err = db.AutoMigrate(&Customer{}, &Account{}, &Transaction{}, &User{}, &Token{})

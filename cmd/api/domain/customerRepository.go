@@ -23,7 +23,7 @@ func (d CustomerRepositoryDb) Save(c Customer) (*Customer, *errs.AppError) {
 	err := result.Error
 	if err != nil {
 		//logger.Error("Error while creating new customer")
-		return nil, errs.NewUnexpectedError("Unexpected error from database")
+		return nil, errs.NewUnexpectedError("Unexpected error from database when create new customer")
 	}
 
 	return &c, nil
@@ -64,22 +64,23 @@ func (d CustomerRepositoryDb) ByID(id string) (*Customer, *errs.AppError) {
 }
 
 // FindAll 取出所有顧客的資料
-func (d CustomerRepositoryDb) FindAll(status string) ([]Customer, *errs.AppError) {
-	var err error
+func (d CustomerRepositoryDb) FindAll(userID int) ([]Customer, *errs.AppError) {
 	var customers []Customer
 
 	// 根據顧客狀態來找尋資料
-	if status == "" {
-		result := d.client.Find(&customers)
-		err = result.Error
-	} else {
-		result := d.client.Where("status = ?", status).Find(&customers)
-		err = result.Error
-	}
+	//if status == "" {
+	//	result := d.client.Find(&customers)
+	//	err = result.Error
+	//} else {
+	//	result := d.client.Where("status = ?", status).Find(&customers)
+	//	err = result.Error
+	//}
 
-	if err != nil {
+	result := d.client.Where(Customer{UserID: uint(userID)}).Find(&customers)
+
+	if err := result.Error; err != nil {
 		//logger.Error("Error while querying customers table" + err.Error())
-		return nil, errs.NewUnexpectedError("Unexpected database error")
+		return nil, errs.NewUnexpectedError("Unexpected database error when find all customer with user id")
 	}
 
 	return customers, nil

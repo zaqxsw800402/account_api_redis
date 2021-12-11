@@ -6,9 +6,9 @@ import (
 )
 
 type AccountRequest struct {
-	CustomerId  uint    `json:"customer_id"`
-	AccountType string  `json:"account_type" binding:"required"`
-	Amount      float64 `json:"amount" binding:"required"`
+	CustomerId  uint   `json:"customer_id"`
+	AccountType string `json:"account_type" binding:"required"`
+	Amount      int64  `json:"amount" binding:"required"`
 }
 
 //type AccountResponse struct {

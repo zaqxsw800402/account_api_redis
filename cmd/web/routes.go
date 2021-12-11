@@ -1,15 +1,12 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 )
 
 func (app *application) routes() http.Handler {
-	server := gin.Default()
-	23
 
 	mux := chi.NewRouter()
 	mux.Use(SessionLoad)
@@ -27,12 +24,20 @@ func (app *application) routes() http.Handler {
 		mux.Get("/all-customers", app.AllCustomers)
 		mux.Get("/all-customers/{id}", app.OneCustomer)
 
-		mux.Get("/all-customers/{id}/accounts", app.AllAccounts)
+		mux.Get("/all-customers/accounts", app.AllAccounts)
+		mux.Get("/all-customers/{id}/accounts", app.AllAccountsWitCustomerID)
 		mux.Get("/all-customers/{id}/accounts/{account_id}", app.OneAccounts)
 
+		mux.Get("/all-customers/{id}/accounts/{account_id}/transactions", app.AllTransactions)
+
+		mux.Get("/transfer", app.Transfer)
+
 		mux.Get("/all-users", app.AllUsers)
-		mux.Get("/all-users/{id}", app.OneUser)
+		mux.Get("/deposit", app.Deposit)
 	})
+
+	// create a new user
+	mux.Get("/all-users/{id}", app.OneUser)
 
 	//mux.Get("/widget/{id}", app.ChargeOnce)
 	//mux.Post("/payment-succeeded", app.PaymentSucceeded)

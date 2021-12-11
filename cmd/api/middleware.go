@@ -6,10 +6,12 @@ import (
 
 func (app *application) Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		_, err := app.uh.authenticateToken(c)
+		user, err := app.authenticateToken(c)
 		if err != nil {
 			app.invalidCredentials(c)
 			return
 		}
+
+		c.Set("userID", user.ID)
 	}
 }

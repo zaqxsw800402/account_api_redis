@@ -1,25 +1,26 @@
 {{template "base" .}}
 
 {{define "title"}}
-    All Customers
+    All Transaction records
 {{end}}
 
 {{define "content"}}
-    <h2 class="mt-5">All Customers</h2>
+    <h2 class="mt-5">All Transaction records</h2>
     <hr>
     <div class="float-end">
-        <a class="btn btn-outline-secondary" href="/admin/all-customers/0">Add Customer</a>
+        <a class="btn btn-danger" href="javascript:void(0);" id="deleteBtn">Delete Account</a>
+
     </div>
     <div class="clearfix"></div>
 
     <table id="user-table" class="table table-striped">
         <thead>
         <tr>
-            <th>Customer ID</th>
-            <th>Name</th>
-            <th>City</th>
-            <th>Date of Birth</th>
-            <th>Status</th>
+            <th>Transaction ID</th>
+            <th>Transaction Type</th>
+            <th>Transaction Amount</th>
+            <th>New Balance</th>
+            <th>Transaction Date</th>
         </tr>
         </thead>
         <tbody>
@@ -33,10 +34,11 @@
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let tbody = document.getElementById("user-table").getElementsByTagName("tbody")[0];
-            let token = localStorage.getItem("token");
+        let tbody = document.getElementById("user-table").getElementsByTagName("tbody")[0];
+        let token = localStorage.getItem("token");
+        let delBtn = document.getElementById("deleteBtn");
 
+        document.addEventListener("DOMContentLoaded", function () {
             const requestOptions = {
                 method: 'get',
                 headers: {
@@ -46,7 +48,7 @@
                 },
             }
 
-            fetch("{{.API}}/api/admin/all-customers", requestOptions)
+            fetch("{{.API}}/api/admin/all-customers/{{index .StringMap "id"}}/accounts/{{index .StringMap "account_id"}}/transactions", requestOptions)
                 .then(response => response.json())
                 .then(function (data) {
                     if (data) {
@@ -54,29 +56,25 @@
                             let newRow = tbody.insertRow();
                             let newCell = newRow.insertCell();
 
-                            newCell.innerHTML = `<a href="/admin/all-customers/${i.customer_id}/accounts">ID: ${i.customer_id}</a>`
-
-                            newCell = newRow.insertCell();
-                            let item = document.createTextNode(i.name);
+                            // newCell.innerHTML = `<a href="/admin/all-customers/${i.customer_id}/accounts/${i.account_id}">ID: ${i.account_id}</a>`
+                            item = document.createTextNode(i.transaction_id);
                             newCell.appendChild(item);
 
                             newCell = newRow.insertCell();
-                            item = document.createTextNode(i.city);
+                            item = document.createTextNode(i.transaction_type);
                             newCell.appendChild(item);
 
                             newCell = newRow.insertCell();
-                            item = document.createTextNode(i.date_of_birth);
+                            item = document.createTextNode(i.transaction_amount);
                             newCell.appendChild(item);
 
                             newCell = newRow.insertCell();
-                            if (i.status !== "active") {
-                                newCell.innerHTML = `<span class="badge bg-danger">InActive</span>`;
-                            } else {
-                                newCell.innerHTML = `<span class="badge bg-success">Active</span>`;
-                            }
+                            item = document.createTextNode(i.new_balance);
+                            newCell.appendChild(item);
 
-                            // newCell = newRow.insertCell();
-                            // newCell.innerHTML = `<a class="btn btn-danger" href="javascript:void(0);" id="deleteBtn">Delete</a>`;
+                            newCell = newRow.insertCell();
+                            item = document.createTextNode(i.transaction_date);
+                            newCell.appendChild(item);
 
                         });
                     } else {
@@ -86,13 +84,7 @@
                         newCell.innerHTML = "no data available";
                     }
                 })
-
-            let delBtn = document.getElementById("deleteBtn");
-
         })
-    </script>
-
-    <script>
 
     </script>
 {{end}}

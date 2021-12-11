@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"red/cmd/api/dto"
 	"red/cmd/api/errs"
@@ -13,7 +14,7 @@ type UserHandlers struct {
 	service service.UserService
 }
 
-func (u *UserHandlers) createAuthToken(c *gin.Context) {
+func (app *application) createAuthToken(c *gin.Context) {
 	var user dto.UserRequest
 
 	err := c.ShouldBindJSON(&user)
@@ -22,7 +23,7 @@ func (u *UserHandlers) createAuthToken(c *gin.Context) {
 		return
 	}
 
-	token, err2 := u.service.SaveToken(user)
+	token, err2 := app.uh.service.SaveToken(user)
 	if err2 != nil {
 		badRequest(c, http.StatusBadRequest, err2)
 		return
@@ -41,7 +42,7 @@ func (u *UserHandlers) createAuthToken(c *gin.Context) {
 	c.JSON(http.StatusOK, payload)
 }
 
-func (u *UserHandlers) authenticateToken(c *gin.Context) (*dto.UserResponse, *errs.AppError) {
+func (app *application) authenticateToken(c *gin.Context) (*dto.UserResponse, *errs.AppError) {
 	request := c.Request
 	authorizationHeader := request.Header.Get("Authorization")
 	if authorizationHeader == "" {
@@ -67,7 +68,7 @@ func (u *UserHandlers) authenticateToken(c *gin.Context) (*dto.UserResponse, *er
 		}
 	}
 
-	user, err := u.service.GetUserWithToken(token)
+	user, err := app.uh.service.GetUserWithToken(token)
 	if err != nil {
 		return nil, err
 	}
@@ -75,22 +76,42 @@ func (u *UserHandlers) authenticateToken(c *gin.Context) (*dto.UserResponse, *er
 	return user, nil
 }
 
-func (u *UserHandlers) name() {
+func (app *application) name() {
 
 }
 
-func (u *UserHandlers) getAllUsers(c *gin.Context) {
+func (app *application) getAllUsers(c *gin.Context) {
 
 }
 
-func (u *UserHandlers) getUser(c *gin.Context) {
+func (app *application) getUser(c *gin.Context) {
 
 }
 
-func (u *UserHandlers) newUser(c *gin.Context) {
+func (app *application) newUser(c *gin.Context) {
+	var user dto.UserRequest
 
+	err := c.ShouldBindJSON(&user)
+	if err != nil {
+		badRequest(c, http.StatusBadRequest, err)
+		return
+	}
+
+	newHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
+	if err != nil {
+		badRequest(c, http.StatusBadRequest, err)
+		return
+	}
+
+	_, appError := app.uh.service.SaveUser(user, string(newHash))
+	if appError != nil {
+		badRequest(c, appError.Code, appError)
+		return
+	}
+
+	jsonResp(c, http.StatusOK)
 }
 
-func (u *UserHandlers) editUser(c *gin.Context) {
+func (app *application) editUser(c *gin.Context) {
 
 }

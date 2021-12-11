@@ -12,9 +12,10 @@ const dbTSLayout = "2006-01-02 15:04:05"
 //go:generate mockgen -destination=../mocks/service/mockAccountService.go -package=service red/service AccountService
 type AccountService interface {
 	NewAccount(request dto.AccountRequest) (*dto.AccountResponse, *errs.AppError)
-	MakeTransaction(request dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError)
-	GetAccount(accountId uint) (*dto.AccountResponse, *errs.AppError)
+	GetAccount(customerID uint, accountId uint) (*dto.AccountResponse, *errs.AppError)
+	GetALlTransactions(customerID uint, accountId uint) ([]dto.TransactionResponse, *errs.AppError)
 	GetAllAccount(customerId uint) ([]dto.AccountResponse, *errs.AppError)
+	MakeTransaction(request dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError)
 }
 
 type DefaultAccountService struct {
@@ -27,9 +28,9 @@ func NewAccountService(repo domain.AccountRepository) DefaultAccountService {
 }
 
 // GetAccount 藉由repository讀取特定的帳戶資料
-func (s DefaultAccountService) GetAccount(accountId uint) (*dto.AccountResponse, *errs.AppError) {
+func (s DefaultAccountService) GetAccount(customerID uint, accountId uint) (*dto.AccountResponse, *errs.AppError) {
 	// 讀取特定帳戶ID的資料
-	account, err := s.repo.ByID(accountId)
+	account, err := s.repo.ByID(customerID, accountId)
 	if err != nil {
 		return nil, err
 	}
@@ -37,9 +38,21 @@ func (s DefaultAccountService) GetAccount(accountId uint) (*dto.AccountResponse,
 	return &response, nil
 }
 
-func (s DefaultAccountService) GetAllAccount(accountId uint) ([]dto.AccountResponse, *errs.AppError) {
+func (s DefaultAccountService) GetALlTransactions(customerID uint, accountId uint) ([]dto.TransactionResponse, *errs.AppError) {
+	transactions, err := s.repo.TransactionsByID(accountId)
+	if err != nil {
+		return nil, err
+	}
+	response := make([]dto.TransactionResponse, 0)
+	for _, transaction := range transactions {
+		response = append(response, transaction.ToDto())
+	}
+	return response, nil
+}
+
+func (s DefaultAccountService) GetAllAccount(customerID uint) ([]dto.AccountResponse, *errs.AppError) {
 	// 讀取特定帳戶ID的資料
-	accounts, err := s.repo.ByCustomerID(accountId)
+	accounts, err := s.repo.ByCustomerID(customerID)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +76,7 @@ func (s DefaultAccountService) NewAccount(req dto.AccountRequest) (*dto.AccountR
 		CustomerId:  req.CustomerId,
 		OpeningDate: time.Now().Format(dbTSLayout),
 		AccountType: req.AccountType,
-		Amount:      req.Amount,
+		Amount:      float64(req.Amount),
 		Status:      "1",
 	}
 	newAccount, err := s.repo.Save(a)
@@ -84,26 +97,29 @@ func (s DefaultAccountService) MakeTransaction(req dto.TransactionRequest) (*dto
 		return nil, err
 	}
 
+	t := domain.Transaction{
+		AccountId:       uint(req.AccountId),
+		Amount:          float64(req.Amount),
+		TransactionType: req.TransactionType,
+		TransactionDate: time.Now().Format(dbTSLayout),
+	}
+
+	customerID := req.CustomerId
 	// 取出帳戶金額
-	account, err := s.repo.ByID(req.AccountId)
+	account, err := s.repo.ByID(uint(customerID), t.AccountId)
 	if err != nil {
 		return nil, err
 	}
 	// 判斷金額
 	if req.IsTransactionTypeWithdrawal() {
-		if !account.CanWithdraw(req.Amount) {
+		if !account.CanWithdraw(t.Amount) {
 			return nil, errs.NewValidationError("Insufficient balance in the account")
 		}
 	}
 
-	t := domain.Transaction{
-		AccountId:       req.AccountId,
-		Amount:          req.Amount,
-		TransactionType: req.TransactionType,
-		TransactionDate: time.Now().Format(dbTSLayout),
-	}
 	// 存入交易紀錄
-	transaction, appError := s.repo.SaveTransaction(t)
+	t.NewBalance = account.Amount
+	transaction, appError := s.repo.SaveTransaction(account.CustomerId, t)
 	if appError != nil {
 		return nil, appError
 	}

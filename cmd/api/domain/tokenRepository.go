@@ -3,7 +3,6 @@ package domain
 import (
 	"crypto/sha256"
 	"database/sql"
-	"fmt"
 	"red/cmd/api/errs"
 	"time"
 )
@@ -43,7 +42,6 @@ func (u UserRepositoryDb) GetUserWithToken(hash string) (*User, *errs.AppError) 
 
 func (u UserRepositoryDb) SaveToken(token Token) (*Token, *errs.AppError) {
 	result := u.client.Delete(&token)
-	fmt.Println(result.Error)
 	if result.Error != nil && result.Error != sql.ErrNoRows {
 		return nil, errs.NewUnexpectedError("unexpected error from database when save token")
 	}

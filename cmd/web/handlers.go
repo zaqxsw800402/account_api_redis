@@ -254,11 +254,18 @@ func (app *application) OneCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *application) AllAccounts(w http.ResponseWriter, r *http.Request) {
+func (app *application) AllAccountsWitCustomerID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	stringMap := make(map[string]string)
 	stringMap["id"] = id
-	if err := app.renderTemplate(w, r, "all-accounts", &templateData{StringMap: stringMap}); err != nil {
+	if err := app.renderTemplate(w, r, "all-accounts-customerID", &templateData{StringMap: stringMap}); err != nil {
+		app.errorLog.Print(err)
+	}
+}
+
+func (app *application) AllAccounts(w http.ResponseWriter, r *http.Request) {
+
+	if err := app.renderTemplate(w, r, "all-accounts", &templateData{}); err != nil {
 		app.errorLog.Print(err)
 	}
 }
@@ -270,6 +277,35 @@ func (app *application) OneAccounts(w http.ResponseWriter, r *http.Request) {
 	stringMap["id"] = id
 	stringMap["account_id"] = accountId
 	if err := app.renderTemplate(w, r, "one-account", &templateData{StringMap: stringMap}); err != nil {
+		app.errorLog.Print(err)
+	}
+}
+
+func (app *application) AllTransactions(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	accountId := chi.URLParam(r, "account_id")
+	stringMap := make(map[string]string)
+	stringMap["id"] = id
+	stringMap["account_id"] = accountId
+	if err := app.renderTemplate(w, r, "all-transactions", &templateData{StringMap: stringMap}); err != nil {
+		app.errorLog.Print(err)
+	}
+}
+
+func (app *application) Deposit(w http.ResponseWriter, r *http.Request) {
+	if err := app.renderTemplate(w, r, "deposit", &templateData{}); err != nil {
+		app.errorLog.Print(err)
+	}
+}
+
+func (app *application) Withdrawal(w http.ResponseWriter, r *http.Request) {
+	if err := app.renderTemplate(w, r, "withdrawal", &templateData{}); err != nil {
+		app.errorLog.Print(err)
+	}
+}
+
+func (app *application) Transfer(w http.ResponseWriter, r *http.Request) {
+	if err := app.renderTemplate(w, r, "transfer", &templateData{}); err != nil {
 		app.errorLog.Print(err)
 	}
 }

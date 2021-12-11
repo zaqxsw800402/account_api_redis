@@ -20,10 +20,16 @@ type Account struct {
 
 //go:generate mockgen -destination=../mocks/domain/mockAccountRepository.go -package=domain red/domain AccountRepository
 type AccountRepository interface {
+	// Save creates a new account
 	Save(account Account) (*Account, *errs.AppError)
-	ByID(id uint) (*Account, *errs.AppError)
-	SaveTransaction(t Transaction) (*Transaction, *errs.AppError)
+	// ByID get a Account by customer id and account id
+	ByID(customerID uint, accountID uint) (*Account, *errs.AppError)
+	TransactionsByID(accountID uint) ([]Transaction, *errs.AppError)
+	SaveTransaction(customerID uint, t Transaction) (*Transaction, *errs.AppError)
+	// ByCustomerID Get all accounts by customer id
 	ByCustomerID(id uint) ([]Account, *errs.AppError)
+	// ByUserID  Get all accounts by user id
+	//ByUserID(id int) ([]Account, *errs.AppError)
 }
 
 // ToNewAccountResponseDto 轉換成回傳的json格式

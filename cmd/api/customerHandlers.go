@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"red/cmd/api/dto"
 	"red/cmd/api/service"
-	"strconv"
 )
 
 type CustomerHandler struct {
@@ -15,11 +13,10 @@ type CustomerHandler struct {
 }
 
 func (app *application) getAllCustomers(c *gin.Context) {
-	userID := app.session.Get(c, "userID")
-	fmt.Println(userID)
+	userID := c.GetInt("userID")
 
-	status := c.Query("status")
-	customers, err := app.ch.service.GetAllCustomer(status)
+	//status := c.Query("status")
+	customers, err := app.ch.service.GetAllCustomer(userID)
 	if err != nil {
 		badRequest(c, err.Code, err)
 	} else {
@@ -56,8 +53,9 @@ func (app *application) getCustomer(c *gin.Context) {
 }
 
 func (app *application) editCustomers(c *gin.Context) {
-	id := c.Param("id")
-	userID, _ := strconv.Atoi(id)
+	//id := c.Param("id")
+	//userID, _ := strconv.Atoi(id)
+	userID := c.GetInt("userID")
 
 	var customer dto.CustomerRequest
 	err := c.ShouldBindJSON(&customer)
@@ -66,18 +64,10 @@ func (app *application) editCustomers(c *gin.Context) {
 		return
 	}
 
-	if userID > 0 {
-		_, err := app.ch.service.UpdateCustomer(customer)
-		if err != nil {
-			badRequest(c, err.Code, err)
-			return
-		}
-	} else {
-		_, err := app.ch.service.SaveCustomer(customer)
-		if err != nil {
-			badRequest(c, err.Code, err)
-			return
-		}
+	_, appError := app.ch.service.SaveCustomer(userID, customer)
+	if err != nil {
+		badRequest(c, appError.Code, appError)
+		return
 	}
 
 	var resp struct {

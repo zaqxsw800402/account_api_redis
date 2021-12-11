@@ -10,7 +10,7 @@ import (
 type UserService interface {
 	GetAllUsers() ([]dto.UserResponse, *errs.AppError)
 	GetUserByID(string) (*dto.UserResponse, *errs.AppError)
-	SaveUser(dto.UserRequest) (*dto.UserResponse, *errs.AppError)
+	SaveUser(dto.UserRequest, string) (*dto.UserResponse, *errs.AppError)
 	GetUserByEmail(string) (*dto.UserResponse, *errs.AppError)
 	GetUserWithToken(string) (*dto.UserResponse, *errs.AppError)
 
@@ -45,12 +45,12 @@ func (s DefaultUserService) GetAllUsers() ([]dto.UserResponse, *errs.AppError) {
 	return response, nil
 }
 
-func (s DefaultUserService) SaveUser(req dto.UserRequest) (*dto.UserResponse, *errs.AppError) {
+func (s DefaultUserService) SaveUser(req dto.UserRequest, hash string) (*dto.UserResponse, *errs.AppError) {
 	u := domain.User{
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Email:     req.Email,
-		Password:  req.Password,
+		Password:  hash,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}

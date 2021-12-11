@@ -98,9 +98,6 @@ func main() {
 	//建立redis
 	redisDB := Redis.NewRedisDb()
 
-	// Get Session
-	session := newSession(dbClient)
-
 	//建立各個Handlers
 	//ch := CustomerHandler{service.NewCustomerService(customerRepositoryDb)}
 	ch := CustomerHandler{service: service.NewCustomerService(customerRepositoryDb)}
@@ -116,7 +113,6 @@ func main() {
 		ah:       ah,
 		uh:       uh,
 		redisDB:  redisDB,
-		session:  session,
 	}
 
 	err = app.serve()

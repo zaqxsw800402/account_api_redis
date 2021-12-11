@@ -8,6 +8,7 @@ import (
 
 type Customer struct {
 	Id          uint `gorm:"column:customer_id;primaryKey;autoIncrement"`
+	UserID      uint `gorm:"column:user_id"`
 	Name        string
 	City        string
 	Zipcode     string
@@ -20,7 +21,7 @@ type Customer struct {
 
 //go:generate mockgen -destination=../mocks/domain/mockCustomerRepository.go -package=domain red/domain CustomerRepository
 type CustomerRepository interface {
-	FindAll(status string) ([]Customer, *errs.AppError)
+	FindAll(userID int) ([]Customer, *errs.AppError)
 	ByID(string) (*Customer, *errs.AppError)
 	Save(customer Customer) (*Customer, *errs.AppError)
 	Update(customer Customer) (*Customer, *errs.AppError)
