@@ -46,6 +46,14 @@ func (app *application) newAccount(c *gin.Context) {
 	jsonResp(c, http.StatusOK)
 }
 
+func (app *application) deleteAccount(c *gin.Context) {
+	accountID := c.Param("account_id")
+	err := app.ah.service.DeleteAccount(accountID)
+	if err != nil {
+		badRequest(c, http.StatusBadRequest, err)
+	}
+}
+
 // makeTransaction 申請交易
 func (app *application) makeTransaction(c *gin.Context) {
 	// 紀錄交易的次數
@@ -65,6 +73,24 @@ func (app *application) makeTransaction(c *gin.Context) {
 
 	// 申請交易
 	_, appError := app.ah.service.MakeTransaction(request)
+	if appError != nil {
+		//c.JSON(appError.Code, appError.AsMessage())
+		badRequest(c, appError.Code, appError)
+	} else {
+		//c.JSON(http.StatusOK, account)
+		jsonResp(c, http.StatusOK)
+	}
+}
+
+func (app *application) transfer(c *gin.Context) {
+	var request dto.TransactionRequest
+	err := c.ShouldBindJSON(&request)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	_, appError := app.ah.service.Transfer(request)
 	if appError != nil {
 		//c.JSON(appError.Code, appError.AsMessage())
 		badRequest(c, appError.Code, appError)
@@ -113,8 +139,8 @@ func (app *application) getAllTransactions(c *gin.Context) {
 	//h.redisDB.SaveAccount(account)
 }
 
-// getAllAccount 讀取帳戶資料
-func (app *application) getAllAccount(c *gin.Context) {
+// getAllAccounts 讀取帳戶資料
+func (app *application) getAllAccounts(c *gin.Context) {
 	customerId := c.Param("id")
 
 	// 檢查Redis裡是否已經有資料
@@ -132,7 +158,7 @@ func (app *application) getAllAccount(c *gin.Context) {
 	}
 
 	// 讀取db裡的資料
-	accounts, appError := app.ah.service.GetAllAccount(uint(id))
+	accounts, appError := app.ah.service.GetAllAccounts(uint(id))
 	if appError != nil {
 		c.JSON(appError.Code, appError.AsMessage())
 		return
@@ -168,7 +194,7 @@ func (app *application) getAllAccountWithUserID(c *gin.Context) {
 
 	resp := make([]Response, 0)
 	for _, customer := range customers {
-		accounts, appError := app.ah.service.GetAllAccount(customer.Id)
+		accounts, appError := app.ah.service.GetAllAccounts(customer.Id)
 		if appError != nil {
 			c.JSON(appError.Code, appError.AsMessage())
 			return

@@ -1,40 +1,39 @@
 {{template "base" .}}
 
 {{define "title"}}
-    Withdrawal
+    Withdrawal / Deposit
 {{end}}
 
 {{define "content"}}
-    <h2 class="mt-5">Withdrawal</h2>
+    <h2 class="mt-5">Withdrawal / Deposit</h2>
     <hr>
 
     <form method="post" action="" name="user_form" id="user_form" class="needs-validation" autocomplete="off"
           novalidate="">
 
         <div class="mb-3">
-            <label for="customer_id" class="form-label">CustomerId</label>
+            <label for="target_account_id" class="form-label">Target Account ID</label>
+            <input type="text" name="account_id" class="form-control" id="target_account_id" required=""
+                   autocomplete="target_account_id-new">
+        </div>
+
+        <div class="mb-3">
+            <label for="customer_id" class="form-label">Customer ID</label>
             <input type="text" name="customer_id" class="form-control" id="customer_id" required=""
                    autocomplete="customer_id-new">
         </div>
 
         <div class="mb-3">
-            <label for="account_id" class="form-label">AccountId</label>
+            <label for="account_id" class="form-label">Account ID</label>
             <input type="text" name="account_id" class="form-control" id="account_id" required=""
                    autocomplete="account_id-new">
         </div>
-
-        {{/*        <div class="mb-3">*/}}
-        {{/*            <label for="transaction_type" class="form-label">Transaction Type</label>*/}}
-        {{/*            <input type="text" name="transaction_type" class="form-control" id="transaction_type" required=""*/}}
-        {{/*                   autocomplete="transaction_type-new">*/}}
-        {{/*        </div>*/}}
 
         <div class="mb-3">
             <label for="amount" class="form-label">Amount</label>
             <input type="text" name="amount" class="form-control" id="amount" required=""
                    autocomplete="amount-new">
         </div>
-
         <hr>
 
         <div class="float-start">
@@ -55,7 +54,6 @@
 
         function val() {
             let form = document.getElementById("user_form");
-            let customer_id = document.getElementById("customer_id").value;
 
             if (form.checkValidity() === false) {
                 this.event.preventDefault();
@@ -69,7 +67,6 @@
                 customer_id: parseInt(document.getElementById("customer_id").value, 10),
                 account_id: parseInt(document.getElementById("account_id").value, 10),
                 amount: parseInt(document.getElementById("amount").value, 10),
-                transaction_type: "withdrawal"
             }
 
             const requestOptions = {
@@ -82,13 +79,49 @@
                 body: JSON.stringify(payload)
             }
 
-            fetch("{{.API}}/api/admin/withdrawal/", requestOptions)
+            fetch("{{.API}}/api/admin/check-customer_id", requestOptions)
                 .then(response => response.json())
                 .then(function (data) {
                     if (data.error) {
-                        Swal.fire("Error: " + data.message);
+                        if (data.message === "must be numbers") {
+                            Swal.fire(data.message);
+                            return
+                        }
+                        Swal.fire("It is not your account!");
                     } else {
-                        location.href = "all-customers/" + customer_id + "/accounts";
+                        transfer()
+                    }
+                })
+        }
+
+        function transfer() {
+            let status = document.querySelector('[name=status]:checked');
+
+            let payload = {
+                customer_id: parseInt(document.getElementById("customer_id").value, 10),
+                account_id: parseInt(document.getElementById("account_id").value, 10),
+                amount: parseInt(document.getElementById("amount").value, 10),
+                target_account_id: parseInt(document.getElementById("target_account_id").value, 10),
+
+            }
+
+            const requestOptions = {
+                method: 'post',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token,
+                },
+                body: JSON.stringify(payload)
+            }
+
+            fetch("{{.API}}/api/admin/transfer", requestOptions)
+                .then(response => response.json())
+                .then(function (data) {
+                    if (data.error) {
+                        Swal.fire(data.message);
+                    } else {
+                        location.href = "/admin/all-customers/" + customer_id + "/accounts/" + account_id + "/transactions";
                     }
                 })
         }

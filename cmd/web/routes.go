@@ -22,7 +22,7 @@ func (app *application) routes() http.Handler {
 		//	mux.Get("/sales/{id}", app.ShowSale)
 		//	mux.Get("/subscriptions/{id}", app.ShowSubscription)
 		mux.Get("/all-customers", app.AllCustomers)
-		mux.Get("/all-customers/{id}", app.OneCustomer)
+		mux.Get("/all-customers/0", app.OneCustomer)
 
 		mux.Get("/all-customers/accounts", app.AllAccounts)
 		mux.Get("/all-customers/{id}/accounts", app.AllAccountsWitCustomerID)

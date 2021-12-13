@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"red/cmd/api/dto"
 	"red/cmd/api/service"
+	"strconv"
 )
 
 type CustomerHandler struct {
@@ -52,20 +53,18 @@ func (app *application) getCustomer(c *gin.Context) {
 
 }
 
-func (app *application) editCustomers(c *gin.Context) {
-	//id := c.Param("id")
-	//userID, _ := strconv.Atoi(id)
+func (app *application) newCustomers(c *gin.Context) {
 	userID := c.GetInt("userID")
 
 	var customer dto.CustomerRequest
 	err := c.ShouldBindJSON(&customer)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		badRequest(c, http.StatusBadRequest, err)
 		return
 	}
 
 	_, appError := app.ch.service.SaveCustomer(userID, customer)
-	if err != nil {
+	if appError != nil {
 		badRequest(c, appError.Code, appError)
 		return
 	}
@@ -80,10 +79,27 @@ func (app *application) editCustomers(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (app *application) deleteCustomers(c *gin.Context) {
-	id := c.Param("id")
-	err := app.ch.service.DeleteCustomer(id)
+func (app *application) deleteCustomer(c *gin.Context) {
+	customerId := c.Param("id")
+	err := app.ch.service.DeleteCustomer(customerId)
 	if err != nil {
 		badRequest(c, err.Code, err)
+	}
+
+	id, appError := strconv.ParseUint(customerId, 10, 64)
+	if appError != nil {
+		//c.JSON(http.StatusBadRequest, err.Error())
+		badRequest(c, http.StatusBadRequest, appError)
+		return
+	}
+
+	accounts, appError := app.ah.service.GetAllAccounts(uint(id))
+	for _, account := range accounts {
+		appError := app.ah.service.DeleteAccount(strconv.Itoa(int(account.AccountId)))
+		if appError != nil {
+			//c.JSON(http.StatusBadRequest, err.Error())
+			badRequest(c, http.StatusBadRequest, appError)
+			return
+		}
 	}
 }

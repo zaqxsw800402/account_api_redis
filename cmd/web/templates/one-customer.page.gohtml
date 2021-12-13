@@ -21,20 +21,20 @@
             <input type="text" name="city" class="form-control" id="city" required="" autocomplete="city-new">
         </div>
 
-        <div class="mb-3">
-            <label for="zipcode" class="form-label">Zipcode</label>
-            <input type="text" name="zipcode" class="form-control" id="zipcode" required="" autocomplete="zipcode-new">
-        </div>
+{{/*        <div class="mb-3">*/}}
+{{/*            <label for="zipcode" class="form-label">Zipcode</label>*/}}
+{{/*            <input type="text" name="zipcode" class="form-control" id="zipcode" required="" autocomplete="zipcode-new">*/}}
+{{/*        </div>*/}}
 
         <div class="mb-3">
-            <label for="date_of_birth" class="form-label">Date of Birth</label>
+            <label for="date_of_birth" class="form-label">Date of Birth  EX:(xxxx/xx/xx)</label>
             <input type="text" name="date_of_birth" class="form-control" id="date_of_birth" required="" autocomplete="date_of_birth-new">
         </div>
 
         <hr>
 
         <div class="float-start">
-            <a class="btn btn-primary" href="javascript:void(0);" onclick="val()" id="saveBtn">Save Changes</a>
+            <a class="btn btn-primary" href="javascript:void(0);" onclick="val()" id="saveBtn">Add Customer</a>
             <a class="btn btn-warning" href="/admin/all-customers" id="cancelBtn">Cancel</a>
         </div>
         <div class="float-end">
@@ -50,7 +50,7 @@
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         let token = localStorage.getItem("token");
-        let id = window.location.pathname.split("/").pop();
+        // let id = window.location.pathname.split("/").pop();
         let delBtn = document.getElementById("deleteBtn");
 
         function val() {
@@ -65,10 +65,10 @@
 
 
             let payload = {
-                customer_id: parseInt(id, 10),
+                // customer_id: parseInt(id, 10),
                 name: document.getElementById("name").value,
                 city: document.getElementById("city").value,
-                zipcode: document.getElementById("zipcode").value,
+                // zipcode: document.getElementById("zipcode").value,
                 date_of_birth: document.getElementById("date_of_birth").value,
             }
 
@@ -82,7 +82,7 @@
                 body: JSON.stringify(payload)
             }
 
-            fetch("{{.API}}/api/admin/all-customers/edit/" + id, requestOptions)
+            fetch("{{.API}}/api/admin/all-customers/0", requestOptions)
                 .then(response => response.json())
                 .then(function (data) {
                     if (data.error) {
@@ -93,71 +93,6 @@
                 })
         }
 
-        document.addEventListener("DOMContentLoaded", function () {
-            if (id !== "0") {
-                if (id !== "{{.UserID}}") {
-                    delBtn.classList.remove("d-none");
-                }
-                const requestOptions = {
-                    method: 'post',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token,
-                    }
-                }
-
-                fetch('{{.API}}/api/admin/all-customers/' + id, requestOptions)
-                    .then(response => response.json())
-                    .then(function (data) {
-                        if (data) {
-                            document.getElementById("name").value = data.name;
-                            document.getElementById("city").value = data.city;
-                            document.getElementById("email").zipcode = data.zipcode;
-                            document.getElementById("email").date_of_birth = data.date_of_birth;
-                        }
-                    })
-            }
-        })
-
-        delBtn.addEventListener("click", function () {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to undo this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Delete User'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const requestOptions = {
-                        method: 'post',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + token,
-                        }
-                    }
-
-                    fetch("{{.API}}/api/admin/all-customers/delete/" + id, requestOptions)
-                        .then(response => response.json)
-                        .then(function (data) {
-                            if (data.errors) {
-                                Swal.fire("Error: " + data.message)
-                            } else {
-                                let jsonData = {
-                                    action: "deleteUser",
-                                    user_id: parseInt(id, 10)
-                                };
-                                socket.send(JSON.stringify(jsonData));
-
-                                location.href = "/admin/all-users"
-                            }
-                        })
-                }
-            })
-        })
 
     </script>
 {{end}}

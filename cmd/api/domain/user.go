@@ -14,6 +14,7 @@ type User struct {
 	Password  string    `gorm:"column:password"`
 	CreatedAt time.Time `gorm:"column:created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at"`
+	DeleteAt  time.Time `gorm:"column:delete_at"`
 }
 
 type UserRepository interface {

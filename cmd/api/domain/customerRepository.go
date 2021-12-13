@@ -3,9 +3,8 @@ package domain
 import (
 	"database/sql"
 	"gorm.io/gorm"
-	"net/http"
 	"red/cmd/api/errs"
-	"strconv"
+	"time"
 )
 
 type CustomerRepositoryDb struct {
@@ -87,14 +86,19 @@ func (d CustomerRepositoryDb) FindAll(userID int) ([]Customer, *errs.AppError) {
 }
 
 func (d CustomerRepositoryDb) Delete(id string) *errs.AppError {
-	i, err := strconv.ParseUint(id, 10, 10)
+	//i, err := strconv.ParseUint(id, 10, 10)
+	//if err != nil {
+	//	return &errs.AppError{
+	//		Code:    http.StatusBadRequest,
+	//		Message: "could not convert customer id to int",
+	//	}
+	//}
 
-	if err != nil {
-		return &errs.AppError{
-			Code:    http.StatusBadRequest,
-			Message: "could not convert customer id to int",
-		}
+	deleteDate := time.Now()
+	result := d.client.Model(&Customer{}).Where("customer_id = ?", id).Updates(Customer{Status: "0", DeleteAt: &deleteDate})
+	if err := result.Error; err != nil {
+		return errs.NewUnexpectedError("Unexpected database error when soft delete customer")
 	}
-	d.client.Model(&Customer{}).Where("customer_id = ?", uint(i)).Updates(Customer{Status: "0"})
+
 	return nil
 }

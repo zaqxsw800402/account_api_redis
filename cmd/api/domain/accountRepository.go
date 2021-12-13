@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"gorm.io/gorm"
 	"red/cmd/api/errs"
+	"time"
 )
 
 type AccountRepositoryDB struct {
@@ -27,8 +28,30 @@ func (d AccountRepositoryDB) Save(a Account) (*Account, *errs.AppError) {
 	return &a, nil
 }
 
+func (d AccountRepositoryDB) Update(a Account) (*Account, *errs.AppError) {
+	// 將帳戶資料存進DB
+	result := d.client.Model(&Account{}).Where("account_id", a.AccountId).Updates(&a)
+	err := result.Error
+	if err != nil {
+		//logger.Error("Error while creating new account")
+		return nil, errs.NewUnexpectedError("Unexpected error from database")
+	}
+
+	return &a, nil
+}
+
+func (d AccountRepositoryDB) Delete(accountID string) *errs.AppError {
+	deleteDate := time.Now()
+	result := d.client.Model(&Account{}).Where("account_id = ?", accountID).Updates(Account{Status: "0", DeleteAt: &deleteDate})
+	if err := result.Error; err != nil {
+		return errs.NewUnexpectedError("Unexpected database error when soft delete account")
+	}
+
+	return nil
+}
+
 // ByID 找尋特定id的帳戶資料
-func (d AccountRepositoryDB) ByID(customerID uint, accountID uint) (*Account, *errs.AppError) {
+func (d AccountRepositoryDB) ByID(accountID uint, customerID ...uint) (*Account, *errs.AppError) {
 	var a Account
 	// 在account表格裡預載入交易紀錄的資料，並且讀取特定id的資料
 	result := d.client.Where("customer_id = ? and account_id = ?", customerID, accountID).First(&a)
@@ -82,7 +105,7 @@ func (d AccountRepositoryDB) ByCustomerID(id uint) ([]Account, *errs.AppError) {
 }
 
 // SaveTransaction 紀錄交易資訊
-func (d AccountRepositoryDB) SaveTransaction(customerID uint, t Transaction) (*Transaction, *errs.AppError) {
+func (d AccountRepositoryDB) SaveTransaction(t Transaction) (*Transaction, *errs.AppError) {
 	// 設定db存入的起始點，用來回滾用
 	tx := d.client.Begin()
 	err := tx.Error
@@ -97,7 +120,8 @@ func (d AccountRepositoryDB) SaveTransaction(customerID uint, t Transaction) (*T
 		t.NewBalance += t.Amount
 	}
 
-	result := tx.Table("accounts").Where("account_id", t.AccountId).Update("amount", t.NewBalance)
+	//result := tx.Table("accounts").Where("account_id", t.AccountId).Update("amount", t.NewBalance)
+	result := tx.Model(&Account{}).Where("account_id", t.AccountId).Updates(Account{Amount: t.NewBalance, UpdatedAt: time.Now()})
 	if err := result.Error; err != nil {
 		tx.Rollback()
 		//logger.Error("Error while update account amount" + err.Error())

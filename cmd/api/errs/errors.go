@@ -41,6 +41,13 @@ func NewValidationError(message string) *AppError {
 	}
 }
 
+func InactiveError(message string) *AppError {
+	return &AppError{
+		Message: message,
+		Code:    http.StatusBadRequest,
+	}
+}
+
 // TooManyTimes 短時間內登入次數過多 400
 func TooManyTimes(message string) *AppError {
 	return &AppError{

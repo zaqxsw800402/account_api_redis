@@ -44,8 +44,6 @@
 {{define "js"}}
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        let id = window.location.pathname.split("/").pop();
-
 
         function val() {
             let form = document.getElementById("user_form");
@@ -65,7 +63,6 @@
                 return
             }
             form.classList.add("was-validated");
-
 
             let payload = {
                 account_type: status.value,

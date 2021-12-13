@@ -12,6 +12,7 @@
     <table id="user-table" class="table table-striped">
         <thead>
         <tr>
+            <th>Customer ID</th>
             <th>Account ID</th>
             <th>Account Type</th>
             <th>Amount</th>
@@ -50,7 +51,10 @@
                             let newRow = tbody.insertRow();
                             let newCell = newRow.insertCell();
 
-                            newCell.innerHTML = `<a href="/admin/all-customers/{{index .StringMap "id"}}/accounts/${i.account_id}/transactions">ID: ${i.account_id}</a>`;
+                            newCell.innerHTML = `<a href="/admin/all-customers/${i.customer_id}/accounts">ID: ${i.customer_id}</a>`;
+
+                            newCell = newRow.insertCell();
+                            newCell.innerHTML = `<a href="/admin/all-customers/${i.customer_id}/accounts/${i.account_id}/transactions">ID: ${i.account_id}</a>`;
 
                             newCell = newRow.insertCell();
                             let item = document.createTextNode(i.account_type);

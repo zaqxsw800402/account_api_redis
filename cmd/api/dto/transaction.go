@@ -12,6 +12,7 @@ const (
 type TransactionRequest struct {
 	CustomerId      int64  `json:"customer_id"`
 	AccountId       int64  `json:"account_id"`
+	TargetAccountId int64  `json:"target_account_id"`
 	Amount          int64  `json:"amount"`
 	TransactionType string `json:"transaction_type"`
 	TransactionDate string `json:"-"`

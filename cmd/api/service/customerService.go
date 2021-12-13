@@ -1,6 +1,7 @@
 package service
 
 import (
+	"net/http"
 	"red/cmd/api/domain"
 	"red/cmd/api/dto"
 	"red/cmd/api/errs"
@@ -11,8 +12,8 @@ import (
 type CustomerService interface {
 	GetAllCustomer(int) ([]dto.CustomerResponse, *errs.AppError)
 	GetCustomer(string) (*dto.CustomerResponse, *errs.AppError)
-	SaveCustomer(int, dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError)
-	UpdateCustomer(dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError)
+	SaveCustomer(userID int, req dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError)
+	NewCustomer(dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError)
 	DeleteCustomer(string) *errs.AppError
 }
 
@@ -69,13 +70,17 @@ func (s DefaultCustomerService) GetCustomer(id string) (*dto.CustomerResponse, *
 // SaveCustomer 存入顧客資料
 func (s DefaultCustomerService) SaveCustomer(userID int, req dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError) {
 	customer := domain.Customer{
-		UserID:      uint(userID),
-		Name:        req.Name,
-		City:        req.City,
-		Zipcode:     req.Zipcode,
+		UserID: uint(userID),
+		Name:   req.Name,
+		City:   req.City,
+		//Zipcode:     req.Zipcode,
 		DateOfBirth: req.DateOfBirth,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
+	}
+
+	if !customer.IsValid() {
+		return nil, &errs.AppError{Code: http.StatusBadRequest, Message: "check your birthdate"}
 	}
 	// 存入顧客資料
 	c, err := s.repo.Save(customer)
@@ -87,12 +92,12 @@ func (s DefaultCustomerService) SaveCustomer(userID int, req dto.CustomerRequest
 	return &response, nil
 }
 
-func (s DefaultCustomerService) UpdateCustomer(req dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError) {
+func (s DefaultCustomerService) NewCustomer(req dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError) {
 	customer := domain.Customer{
-		Id:          uint(req.Id),
-		Name:        req.Name,
-		City:        req.City,
-		Zipcode:     req.Zipcode,
+		//Id:          uint(req.Id),
+		Name: req.Name,
+		City: req.City,
+		//Zipcode:     req.Zipcode,
 		DateOfBirth: req.DateOfBirth,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),

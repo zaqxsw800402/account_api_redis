@@ -7,27 +7,31 @@ import (
 )
 
 type Account struct {
-	AccountId    uint          `gorm:"column:account_id;primaryKey;autoIncrement" `
-	CustomerId   uint          `gorm:"column:customer_id" `
-	OpeningDate  string        `gorm:"column:opening_date" `
-	AccountType  string        `gorm:"column:account_type" `
-	Amount       float64       `gorm:"column:amount" `
-	Status       string        `gorm:"column:status;default:1" `
-	CreatedAt    time.Time     `gorm:"column:created_at"`
-	UpdatedAt    time.Time     `gorm:"column:updated_at"`
-	Transactions []Transaction `gorm:"foreignKey:AccountId;references:AccountId" `
+	AccountId   uint       `gorm:"column:account_id;primaryKey;autoIncrement" `
+	CustomerId  uint       `gorm:"column:customer_id" `
+	OpeningDate string     `gorm:"column:opening_date" `
+	AccountType string     `gorm:"column:account_type" `
+	Amount      float64    `gorm:"column:amount" `
+	Status      string     `gorm:"column:status;default:1" `
+	CreatedAt   time.Time  `gorm:"column:created_at"`
+	UpdatedAt   time.Time  `gorm:"column:updated_at"`
+	DeleteAt    *time.Time `gorm:"column:delete_at;index"`
+	//Transactions []Transaction `gorm:"foreignKey:AccountId;references:AccountId" `
 }
 
 //go:generate mockgen -destination=../mocks/domain/mockAccountRepository.go -package=domain red/domain AccountRepository
 type AccountRepository interface {
-	// Save creates a new account
+	// Save Creates a new account
 	Save(account Account) (*Account, *errs.AppError)
-	// ByID get a Account by customer id and account id
-	ByID(customerID uint, accountID uint) (*Account, *errs.AppError)
+	// ByID Get Account by customer id and account id
+	ByID(accountID uint, customerID ...uint) (*Account, *errs.AppError)
+	// TransactionsByID Get all transactions by account id
 	TransactionsByID(accountID uint) ([]Transaction, *errs.AppError)
-	SaveTransaction(customerID uint, t Transaction) (*Transaction, *errs.AppError)
+	SaveTransaction(t Transaction) (*Transaction, *errs.AppError)
+	Update(account Account) (*Account, *errs.AppError)
 	// ByCustomerID Get all accounts by customer id
 	ByCustomerID(id uint) ([]Account, *errs.AppError)
+	Delete(accountID string) *errs.AppError
 	// ByUserID  Get all accounts by user id
 	//ByUserID(id int) ([]Account, *errs.AppError)
 }
@@ -61,4 +65,11 @@ func (a Account) statusAsText() string {
 		statusAsText = "inactive"
 	}
 	return statusAsText
+}
+
+func (a Account) InactiveAccount() bool {
+	if a.Status == "0" {
+		return false
+	}
+	return true
 }

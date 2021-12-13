@@ -11,9 +11,9 @@ type CustomerResponse struct {
 }
 
 type CustomerRequest struct {
-	Id          int    `json:"customer_id"`
-	Name        string `json:"name" binding:"required"`
-	City        string `json:"city" binding:"required"`
-	Zipcode     string `json:"zipcode" binding:"required"`
+	//Id          int    `json:"customer_id"`
+	Name string `json:"name" binding:"required"`
+	City string `json:"city" binding:"required"`
+	//Zipcode     string `json:"zipcode" binding:"required"`
 	DateOfBirth string `json:"date_of_birth" binding:"required"`
 }

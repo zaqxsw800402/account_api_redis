@@ -12,10 +12,12 @@ const dbTSLayout = "2006-01-02 15:04:05"
 //go:generate mockgen -destination=../mocks/service/mockAccountService.go -package=service red/service AccountService
 type AccountService interface {
 	NewAccount(request dto.AccountRequest) (*dto.AccountResponse, *errs.AppError)
+	DeleteAccount(accountID string) *errs.AppError
 	GetAccount(customerID uint, accountId uint) (*dto.AccountResponse, *errs.AppError)
 	GetALlTransactions(customerID uint, accountId uint) ([]dto.TransactionResponse, *errs.AppError)
-	GetAllAccount(customerId uint) ([]dto.AccountResponse, *errs.AppError)
+	GetAllAccounts(customerId uint) ([]dto.AccountResponse, *errs.AppError)
 	MakeTransaction(request dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError)
+	Transfer(request dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError)
 }
 
 type DefaultAccountService struct {
@@ -30,10 +32,15 @@ func NewAccountService(repo domain.AccountRepository) DefaultAccountService {
 // GetAccount 藉由repository讀取特定的帳戶資料
 func (s DefaultAccountService) GetAccount(customerID uint, accountId uint) (*dto.AccountResponse, *errs.AppError) {
 	// 讀取特定帳戶ID的資料
-	account, err := s.repo.ByID(customerID, accountId)
+	account, err := s.repo.ByID(accountId, customerID)
 	if err != nil {
 		return nil, err
 	}
+
+	if !account.InactiveAccount() {
+		return nil, errs.InactiveError("this account is inactive")
+	}
+
 	response := account.ToDto()
 	return &response, nil
 }
@@ -50,7 +57,7 @@ func (s DefaultAccountService) GetALlTransactions(customerID uint, accountId uin
 	return response, nil
 }
 
-func (s DefaultAccountService) GetAllAccount(customerID uint) ([]dto.AccountResponse, *errs.AppError) {
+func (s DefaultAccountService) GetAllAccounts(customerID uint) ([]dto.AccountResponse, *errs.AppError) {
 	// 讀取特定帳戶ID的資料
 	accounts, err := s.repo.ByCustomerID(customerID)
 	if err != nil {
@@ -62,6 +69,15 @@ func (s DefaultAccountService) GetAllAccount(customerID uint) ([]dto.AccountResp
 		response = append(response, account.ToDto())
 	}
 	return response, nil
+}
+
+func (s DefaultAccountService) DeleteAccount(accountID string) *errs.AppError {
+	err := s.repo.Delete(accountID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // NewAccount 建立新帳戶
@@ -104,12 +120,16 @@ func (s DefaultAccountService) MakeTransaction(req dto.TransactionRequest) (*dto
 		TransactionDate: time.Now().Format(dbTSLayout),
 	}
 
-	customerID := req.CustomerId
 	// 取出帳戶金額
-	account, err := s.repo.ByID(uint(customerID), t.AccountId)
+	account, err := s.repo.ByID(t.AccountId)
 	if err != nil {
 		return nil, err
 	}
+
+	if !account.InactiveAccount() {
+		return nil, errs.InactiveError("this account is inactive")
+	}
+
 	// 判斷金額
 	if req.IsTransactionTypeWithdrawal() {
 		if !account.CanWithdraw(t.Amount) {
@@ -119,7 +139,91 @@ func (s DefaultAccountService) MakeTransaction(req dto.TransactionRequest) (*dto
 
 	// 存入交易紀錄
 	t.NewBalance = account.Amount
-	transaction, appError := s.repo.SaveTransaction(account.CustomerId, t)
+	transaction, appError := s.repo.SaveTransaction(t)
+	if appError != nil {
+		return nil, appError
+	}
+
+	// 轉換成回傳的json格式
+	response := transaction.ToDto()
+
+	return &response, nil
+}
+
+func (s DefaultAccountService) Transfer(req dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError) {
+	// 判斷內容是否有效
+
+	t := domain.Transaction{
+		AccountId:       uint(req.AccountId),
+		Amount:          float64(req.Amount),
+		TransactionType: "withdrawal",
+		TransactionDate: time.Now().Format(dbTSLayout),
+	}
+
+	customerID := req.CustomerId
+	// 取出帳戶金額
+	account, err := s.repo.ByID(t.AccountId, uint(customerID))
+	if err != nil {
+		return nil, err
+	}
+
+	if !account.InactiveAccount() {
+		return nil, errs.InactiveError("this account is inactive")
+	}
+
+	// 判斷金額
+	if !account.CanWithdraw(t.Amount) {
+		return nil, errs.NewValidationError("Insufficient balance in the account")
+	}
+
+	account.Amount -= t.Amount
+	account.UpdatedAt = time.Now()
+
+	_, err = s.repo.Update(*account)
+	if err != nil {
+		return nil, err
+	}
+	// 存入交易紀錄
+	t.NewBalance = account.Amount
+	transaction, appError := s.repo.SaveTransaction(t)
+	if appError != nil {
+		return nil, appError
+	}
+
+	// target account
+
+	t = domain.Transaction{
+		AccountId:       uint(req.TargetAccountId),
+		Amount:          float64(req.Amount),
+		TransactionType: "deposit",
+		TransactionDate: time.Now().Format(dbTSLayout),
+	}
+
+	// 取出帳戶金額
+	account, err := s.repo.ByID(t.AccountId, uint(customerID))
+	if err != nil {
+		return nil, err
+	}
+
+	if !account.InactiveAccount() {
+		return nil, errs.InactiveError("this account is inactive")
+	}
+
+	// 判斷金額
+	if !account.CanWithdraw(t.Amount) {
+		return nil, errs.NewValidationError("Insufficient balance in the account")
+	}
+
+	account.Amount -= t.Amount
+	account.UpdatedAt = time.Now()
+
+	_, err = s.repo.Update(*account)
+	if err != nil {
+		return nil, err
+	}
+	// 存入交易紀錄
+	t.NewBalance = account.Amount
+	transaction, appError := s.repo.SaveTransaction(t)
 	if appError != nil {
 		return nil, appError
 	}
