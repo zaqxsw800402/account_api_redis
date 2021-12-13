@@ -19,6 +19,19 @@ type AccountHandler struct {
 func (app *application) newAccount(c *gin.Context) {
 	// 讀取id的值
 	customerId := c.Param("id")
+
+	customer, appError := app.ch.service.GetCustomer(customerId)
+	if appError != nil {
+		//c.JSON(appError.Code, appError.AsMessage())
+		badRequest(c, appError.Code, appError)
+		return
+	}
+
+	if customer.Status == "inactive" {
+		badRequest(c, http.StatusBadRequest, errors.New("this customer is inactive"))
+		return
+	}
+
 	var request dto.AccountRequest
 	// 讀取BODY裡的資料
 	err := c.ShouldBindJSON(&request)
@@ -36,7 +49,7 @@ func (app *application) newAccount(c *gin.Context) {
 	request.CustomerId = uint(id)
 
 	// 建立新帳戶
-	_, appError := app.ah.service.NewAccount(request)
+	_, appError = app.ah.service.NewAccount(request)
 	if appError != nil {
 		//c.JSON(appError.Code, appError.AsMessage())
 		badRequest(c, appError.Code, appError)

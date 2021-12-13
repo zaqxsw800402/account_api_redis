@@ -19,7 +19,7 @@ type Customer struct {
 	//Accounts    []Account `gorm:"foreignKey:CustomerId;references:Id"`
 	CreatedAt time.Time  `gorm:"column:created_at"`
 	UpdatedAt time.Time  `gorm:"column:updated_at"`
-	DeleteAt  *time.Time `gorm:"column:delete_at;index"`
+	DeleteAt  *time.Time `gorm:"column:deleted_at;index"`
 }
 
 //go:generate mockgen -destination=../mocks/domain/mockCustomerRepository.go -package=domain red/domain CustomerRepository

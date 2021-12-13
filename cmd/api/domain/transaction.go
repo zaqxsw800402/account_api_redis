@@ -14,7 +14,7 @@ type Transaction struct {
 }
 
 func (t Transaction) IsWithdrawal() bool {
-	if t.TransactionType == "withdrawal" {
+	if t.TransactionType == "withdrawal" || t.TransactionType == "transfer out" {
 		return true
 	}
 	return false

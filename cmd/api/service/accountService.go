@@ -32,7 +32,7 @@ func NewAccountService(repo domain.AccountRepository) DefaultAccountService {
 // GetAccount 藉由repository讀取特定的帳戶資料
 func (s DefaultAccountService) GetAccount(customerID uint, accountId uint) (*dto.AccountResponse, *errs.AppError) {
 	// 讀取特定帳戶ID的資料
-	account, err := s.repo.ByID(accountId, customerID)
+	account, err := s.repo.ByID(accountId)
 	if err != nil {
 		return nil, err
 	}
@@ -156,13 +156,11 @@ func (s DefaultAccountService) Transfer(req dto.TransactionRequest) (*dto.Transa
 	t := domain.Transaction{
 		AccountId:       uint(req.AccountId),
 		Amount:          float64(req.Amount),
-		TransactionType: "withdrawal",
+		TransactionType: "transfer out",
 		TransactionDate: time.Now().Format(dbTSLayout),
 	}
-
-	customerID := req.CustomerId
 	// 取出帳戶金額
-	account, err := s.repo.ByID(t.AccountId, uint(customerID))
+	account, err := s.repo.ByID(t.AccountId)
 	if err != nil {
 		return nil, err
 	}
@@ -176,13 +174,6 @@ func (s DefaultAccountService) Transfer(req dto.TransactionRequest) (*dto.Transa
 		return nil, errs.NewValidationError("Insufficient balance in the account")
 	}
 
-	account.Amount -= t.Amount
-	account.UpdatedAt = time.Now()
-
-	_, err = s.repo.Update(*account)
-	if err != nil {
-		return nil, err
-	}
 	// 存入交易紀錄
 	t.NewBalance = account.Amount
 	transaction, appError := s.repo.SaveTransaction(t)
@@ -195,35 +186,19 @@ func (s DefaultAccountService) Transfer(req dto.TransactionRequest) (*dto.Transa
 	t = domain.Transaction{
 		AccountId:       uint(req.TargetAccountId),
 		Amount:          float64(req.Amount),
-		TransactionType: "deposit",
+		TransactionType: "transfer in",
 		TransactionDate: time.Now().Format(dbTSLayout),
 	}
 
 	// 取出帳戶金額
-	account, err := s.repo.ByID(t.AccountId, uint(customerID))
+	targetAccount, err := s.repo.ByID(t.AccountId)
 	if err != nil {
 		return nil, err
 	}
 
-	if !account.InactiveAccount() {
-		return nil, errs.InactiveError("this account is inactive")
-	}
-
-	// 判斷金額
-	if !account.CanWithdraw(t.Amount) {
-		return nil, errs.NewValidationError("Insufficient balance in the account")
-	}
-
-	account.Amount -= t.Amount
-	account.UpdatedAt = time.Now()
-
-	_, err = s.repo.Update(*account)
-	if err != nil {
-		return nil, err
-	}
 	// 存入交易紀錄
-	t.NewBalance = account.Amount
-	transaction, appError := s.repo.SaveTransaction(t)
+	t.NewBalance = targetAccount.Amount
+	transaction, appError = s.repo.SaveTransaction(t)
 	if appError != nil {
 		return nil, appError
 	}

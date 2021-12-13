@@ -15,7 +15,7 @@ type Account struct {
 	Status      string     `gorm:"column:status;default:1" `
 	CreatedAt   time.Time  `gorm:"column:created_at"`
 	UpdatedAt   time.Time  `gorm:"column:updated_at"`
-	DeleteAt    *time.Time `gorm:"column:delete_at;index"`
+	DeleteAt    *time.Time `gorm:"column:deleted_at;index"`
 	//Transactions []Transaction `gorm:"foreignKey:AccountId;references:AccountId" `
 }
 
@@ -24,7 +24,7 @@ type AccountRepository interface {
 	// Save Creates a new account
 	Save(account Account) (*Account, *errs.AppError)
 	// ByID Get Account by customer id and account id
-	ByID(accountID uint, customerID ...uint) (*Account, *errs.AppError)
+	ByID(accountID uint) (*Account, *errs.AppError)
 	// TransactionsByID Get all transactions by account id
 	TransactionsByID(accountID uint) ([]Transaction, *errs.AppError)
 	SaveTransaction(t Transaction) (*Transaction, *errs.AppError)

@@ -53,7 +53,7 @@ func (app *application) getCustomer(c *gin.Context) {
 
 }
 
-func (app *application) newCustomers(c *gin.Context) {
+func (app *application) newCustomer(c *gin.Context) {
 	userID := c.GetInt("userID")
 
 	var customer dto.CustomerRequest

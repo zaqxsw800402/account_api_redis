@@ -49,8 +49,7 @@ func (d CustomerRepositoryDb) Update(c Customer) (*Customer, *errs.AppError) {
 func (d CustomerRepositoryDb) ByID(id string) (*Customer, *errs.AppError) {
 	// 在customers的表格裡，先預載入account的資料，並讀取特定id的資料
 	var c Customer
-	//result := d.client.Table("Customers").Preload("Accounts").Where("customer_id = ?", id).Find(&c)
-	result := d.client.Table("Customers").Where("customer_id = ?", id).Find(&c)
+	result := d.client.Where("customer_id = ?", id).First(&c)
 	if err := result.Error; err != nil {
 		//logger.Error("Error while querying customers table" + result.Error.Error())
 		if err == sql.ErrNoRows {

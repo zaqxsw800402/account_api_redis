@@ -31,13 +31,14 @@ func (app *application) routes() http.Handler {
 		mux.Get("/all-customers/{id}/accounts/{account_id}/transactions", app.AllTransactions)
 
 		mux.Get("/transfer", app.Transfer)
+		mux.Get("/deposit", app.Deposit)
 
 		mux.Get("/all-users", app.AllUsers)
-		mux.Get("/deposit", app.Deposit)
 	})
 
 	// create a new user
 	mux.Get("/all-users/{id}", app.OneUser)
+	mux.Get("/forgot-password", app.ForgotPassword)
 
 	//mux.Get("/widget/{id}", app.ChargeOnce)
 	//mux.Post("/payment-succeeded", app.PaymentSucceeded)

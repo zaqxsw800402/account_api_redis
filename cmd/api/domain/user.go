@@ -35,8 +35,5 @@ func (u User) ToDto() dto.UserResponse {
 		FirstName: u.FirstName,
 		LastName:  u.LastName,
 		Email:     u.Email,
-		//Password:  u.Password,
-		//CreatedAt: u.CreatedAt,
-		//UpdatedAt: u.UpdatedAt,
 	}
 }

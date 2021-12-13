@@ -31,7 +31,7 @@ func (app *application) routes() http.Handler {
 
 	admin.GET("/all-users", app.getAllUsers)
 	//建立顧客
-	admin.POST("/all-customers/0", app.newCustomers)
+	admin.POST("/all-customers/0", app.newCustomer)
 	//查詢特定顧客的資訊
 	admin.GET("/all-customers/:id", app.getCustomer)
 	//查詢全部顧客
