@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"red/cmd/api/dto"
@@ -10,32 +11,39 @@ import (
 
 type CustomerHandler struct {
 	service service.CustomerService
-	//redisDB Redis.Database
 }
 
 func (app *application) getAllCustomers(c *gin.Context) {
 	userID := c.GetInt("userID")
 
-	//status := c.Query("status")
-	customers, err := app.ch.service.GetAllCustomer(userID)
-	if err != nil {
-		badRequest(c, err.Code, err)
-	} else {
-		c.JSON(http.StatusOK, customers)
+	allCustomers, _ := app.redis.GetAllCustomers(c, userID)
+	if len(allCustomers) != 0 {
+		c.JSON(http.StatusOK, allCustomers)
+		return
 	}
+
+	customers, err2 := app.ch.service.GetAllCustomer(userID)
+	if err2 != nil {
+		badRequest(c, err2.Code, err2)
+	}
+
+	app.redis.SaveAllCustomers(c, userID, customers)
+
+	c.JSON(http.StatusOK, customers)
+
 }
 
 func (app *application) getCustomer(c *gin.Context) {
 	id := c.Param("id")
 
 	// 檢查時間內讀取的次數，太多次則拒絕提供資料
-	//appError := app.ch.redisDB.CustomerTimes(id)
+	//appError := app.ch.redis.CustomerTimes(id)
 	//if appError != nil {
 	//	c.JSON(appError.Code, appError.AsMessage())
 	//	return
 	//}
 
-	//if customer := app.ch.redisDB.GetCustomer(id); customer != nil {
+	//if customer := app.ch.redis.GetCustomer(id); customer != nil {
 	//	c.JSON(http.StatusOK, customer)
 	//	fmt.Println("Using redis")
 	//	return
@@ -49,25 +57,27 @@ func (app *application) getCustomer(c *gin.Context) {
 		c.JSON(http.StatusOK, customer)
 	}
 
-	//app.ch.redisDB.SaveCustomer(customer)
+	//app.ch.redis.SaveCustomer(customer)
 
 }
 
-func (app *application) newCustomers(c *gin.Context) {
+func (app *application) newCustomer(c *gin.Context) {
 	userID := c.GetInt("userID")
 
-	var customer dto.CustomerRequest
-	err := c.ShouldBindJSON(&customer)
+	var req dto.CustomerRequest
+	err := c.ShouldBindJSON(&req)
 	if err != nil {
 		badRequest(c, http.StatusBadRequest, err)
 		return
 	}
 
-	_, appError := app.ch.service.SaveCustomer(userID, customer)
+	customer, appError := app.ch.service.SaveCustomer(userID, req)
 	if appError != nil {
 		badRequest(c, appError.Code, appError)
 		return
 	}
+
+	app.redis.SaveCustomer(c, userID, *customer)
 
 	var resp struct {
 		Error   bool   `json:"error"`
@@ -80,11 +90,15 @@ func (app *application) newCustomers(c *gin.Context) {
 }
 
 func (app *application) deleteCustomer(c *gin.Context) {
+	userID := c.GetInt("userID")
 	customerId := c.Param("id")
 	err := app.ch.service.DeleteCustomer(customerId)
 	if err != nil {
 		badRequest(c, err.Code, err)
 	}
+
+	err2 := app.redis.DeleteCustomer(userID, customerId)
+	fmt.Println("error := ", err2)
 
 	id, appError := strconv.ParseUint(customerId, 10, 64)
 	if appError != nil {

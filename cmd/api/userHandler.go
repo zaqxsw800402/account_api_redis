@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"red/cmd/api/dto"
@@ -42,7 +43,7 @@ func (app *application) createAuthToken(c *gin.Context) {
 	c.JSON(http.StatusOK, payload)
 }
 
-func (app *application) authenticateToken(c *gin.Context) (*dto.UserResponse, *errs.AppError) {
+func (app *application) authenticateToken(c *gin.Context) (*int, *errs.AppError) {
 	request := c.Request
 	authorizationHeader := request.Header.Get("Authorization")
 	if authorizationHeader == "" {
@@ -68,12 +69,29 @@ func (app *application) authenticateToken(c *gin.Context) (*dto.UserResponse, *e
 		}
 	}
 
-	user, err := app.uh.service.GetUserWithToken(token)
-	if err != nil {
-		return nil, err
+	// redis
+	result := app.redis.GetUserID(token)
+	i, err2 := result.Int()
+	switch {
+	case err2 == redis.Nil:
+		user, err := app.uh.service.GetUserWithToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		app.redis.SaveUserID(token, user.ID)
+		return &user.ID, nil
+
+	case err2 != nil:
+		return nil, &errs.AppError{
+			Code:    http.StatusBadRequest,
+			Message: "user not in redis",
+		}
+
+	default:
+		return &i, nil
 	}
 
-	return user, nil
 }
 
 func (app *application) name() {

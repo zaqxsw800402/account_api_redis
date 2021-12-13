@@ -5,20 +5,25 @@
 {{end}}
 
 {{define "content"}}
-    <h2 class="mt-5">Add Account </h2>
+    <h2 class="mt-5">Add Account</h2>
     <hr>
 
     <form method="post" action="" name="user_form" id="user_form" class="needs-validation" autocomplete="off"
           novalidate="">
-{{/*        <div class="mb-3">*/}}
-{{/*            <label for="account_type" class="form-label">Account Type (saving/checking)</label>*/}}
-{{/*            <input type="text" name="account_type" class="form-control" id="account_type" required=""*/}}
-{{/*                   autocomplete="account_type-new">*/}}
-{{/*        </div>*/}}
+        <div class="mb-3">
+            <label for="customer_id" class="form-label">Customer ID</label>
+            <input type="text" name="customer_id" class="form-control" id="customer_id" required=""
+                   autocomplete="customer_id-new">
+        </div>
+
+        <div class="mb-3">
+            <label for="amount" class="form-label">Amount</label>
+            <input type="text" name="amount" class="form-control" id="amount" required="" autocomplete="amount-new">
+        </div>
+
         <div>
             <label for="saving" class="form-label">Account Type</label>
         </div>
-
         <div>
             <label><input type="radio" name="status" value="saving" id="saving"
                           style="height:20px; width:20px; vertical-align: middle" required> Saving</label>
@@ -29,11 +34,7 @@
                           style="height:20px; width:20px; vertical-align: middle;"> Checking</label>
         </div>
 
-        <div></div>
-        <div class="mb-3">
-            <label for="amount" class="form-label">Amount</label>
-            <input type="text" name="amount" class="form-control" id="amount" required="" autocomplete="amount-new">
-        </div>
+
         <hr>
 
         <div class="float-start">
@@ -52,9 +53,9 @@
 
         function val() {
             let form = document.getElementById("user_form");
+            let customer_id = parseInt(document.getElementById("customer_id").value, 10);
             let status = document.querySelector('[name=status]:checked');
             let token = localStorage.getItem("token");
-            let customer = `{{index .StringMap "id"}}`
 
 
             if (status === null) {
@@ -71,9 +72,9 @@
             form.classList.add("was-validated");
 
             let payload = {
-                customer_id: parseInt(customer,10),
                 account_type: status.value,
-                amount: parseInt(document.getElementById("amount").value,10)
+                amount: parseInt(document.getElementById("amount").value, 10),
+                customer_id: parseInt(document.getElementById("customer_id").value, 10)
             }
 
             const requestOptions = {
@@ -86,13 +87,13 @@
                 body: JSON.stringify(payload)
             }
 
-            fetch("{{.API}}/api/admin/all-customers/{{index .StringMap "id"}}/accounts/0", requestOptions)
+            fetch("{{.API}}/api/admin/all-customers/accounts/0", requestOptions)
                 .then(response => response.json())
                 .then(function (data) {
                     if (data.error) {
                         Swal.fire("Error: " + data.message);
                     } else {
-                        location.href = "/admin/all-customers/{{index .StringMap "id"}}/accounts";
+                        location.href = "/admin/all-customers/" + customer_id + "/accounts";
                     }
                 })
         }

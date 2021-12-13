@@ -8,9 +8,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"red/Redis"
 	"red/cmd/api/domain"
 	"red/cmd/api/service"
+	"red/redis"
 	"time"
 )
 
@@ -35,7 +35,7 @@ type application struct {
 	ch       CustomerHandler
 	ah       AccountHandler
 	uh       UserHandlers
-	redisDB  Redis.Database
+	redis    redis.Database
 	session  *scs.SessionManager
 }
 
@@ -95,14 +95,14 @@ func main() {
 	accountRepositoryDb := domain.NewAccountRepositoryDb(dbClient)
 	userRepositoryDb := domain.NewUserRepositoryDb(dbClient)
 
-	//建立redis
-	redisDB := Redis.NewRedisDb()
-
 	//建立各個Handlers
 	//ch := CustomerHandler{service.NewCustomerService(customerRepositoryDb)}
 	ch := CustomerHandler{service: service.NewCustomerService(customerRepositoryDb)}
 	ah := AccountHandler{service: service.NewAccountService(accountRepositoryDb)}
 	uh := UserHandlers{service: service.NewUserService(userRepositoryDb)}
+
+	//建立redis
+	redisDB := redis.New()
 
 	app := &application{
 		config:   cfg,
@@ -112,7 +112,7 @@ func main() {
 		ch:       ch,
 		ah:       ah,
 		uh:       uh,
-		redisDB:  redisDB,
+		redis:    redisDB,
 	}
 
 	err = app.serve()

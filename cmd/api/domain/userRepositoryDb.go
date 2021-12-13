@@ -17,7 +17,7 @@ func NewUserRepositoryDb(dbClient *gorm.DB) UserRepositoryDb {
 func (u UserRepositoryDb) SaveUser(user User) (*User, *errs.AppError) {
 	result := u.client.Create(&user)
 
-	if err := result.Error; err != nil { //logger.Error("Error while creating new user")
+	if err := result.Error; err != nil {
 		return nil, errs.NewUnexpectedError("repeated email")
 		//return nil, errs.NewUnexpectedError("unexpected error from database when save user")
 	}

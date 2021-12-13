@@ -51,10 +51,10 @@ func (d AccountRepositoryDB) Delete(accountID string) *errs.AppError {
 }
 
 // ByID 找尋特定id的帳戶資料
-func (d AccountRepositoryDB) ByID(accountID uint, customerID ...uint) (*Account, *errs.AppError) {
+func (d AccountRepositoryDB) ByID(accountID uint) (*Account, *errs.AppError) {
 	var a Account
 	// 在account表格裡預載入交易紀錄的資料，並且讀取特定id的資料
-	result := d.client.Where("customer_id = ? and account_id = ?", customerID, accountID).First(&a)
+	result := d.client.Where("account_id = ?", accountID).First(&a)
 	//result := d.client.Table("accounts").Preload("Transactions").Where("account_id = ?", id).Find(&a)
 	if result.RowsAffected == 0 {
 		return nil, errs.NewNotFoundError("Account not found")

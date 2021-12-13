@@ -270,12 +270,23 @@ func (app *application) AllAccounts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *application) OneAccounts(w http.ResponseWriter, r *http.Request) {
+func (app *application) OneAccountBar(w http.ResponseWriter, r *http.Request) {
+	//id := chi.URLParam(r, "id")
+	//accountId := chi.URLParam(r, "account_id")
+	//stringMap := make(map[string]string)
+	//stringMap["id"] = id
+	//stringMap["account_id"] = accountId
+	if err := app.renderTemplate(w, r, "one-account-bar", &templateData{}); err != nil {
+		app.errorLog.Print(err)
+	}
+}
+
+func (app *application) OneAccount(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	accountId := chi.URLParam(r, "account_id")
+	//accountId := chi.URLParam(r, "account_id")
 	stringMap := make(map[string]string)
 	stringMap["id"] = id
-	stringMap["account_id"] = accountId
+	//stringMap["account_id"] = accountId
 	if err := app.renderTemplate(w, r, "one-account", &templateData{StringMap: stringMap}); err != nil {
 		app.errorLog.Print(err)
 	}

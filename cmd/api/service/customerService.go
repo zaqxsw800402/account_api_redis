@@ -82,6 +82,7 @@ func (s DefaultCustomerService) SaveCustomer(userID int, req dto.CustomerRequest
 	if !customer.IsValid() {
 		return nil, &errs.AppError{Code: http.StatusBadRequest, Message: "check your birthdate"}
 	}
+
 	// 存入顧客資料
 	c, err := s.repo.Save(customer)
 	if err != nil {

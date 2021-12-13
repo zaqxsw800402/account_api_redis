@@ -1,11 +1,11 @@
 {{template "base" .}}
 
 {{define "title"}}
-    Withdrawal / Deposit
+    Transfer money
 {{end}}
 
 {{define "content"}}
-    <h2 class="mt-5">Withdrawal / Deposit</h2>
+    <h2 class="mt-5">Transfer money</h2>
     <hr>
 
     <form method="post" action="" name="user_form" id="user_form" class="needs-validation" autocomplete="off"
@@ -13,18 +13,18 @@
 
         <div class="mb-3">
             <label for="target_account_id" class="form-label">Target Account ID</label>
-            <input type="text" name="account_id" class="form-control" id="target_account_id" required=""
+            <input type="text" name="target_account_id" class="form-control" id="target_account_id" required=""
                    autocomplete="target_account_id-new">
         </div>
 
         <div class="mb-3">
-            <label for="customer_id" class="form-label">Customer ID</label>
+            <label for="customer_id" class="form-label">Your Customer ID</label>
             <input type="text" name="customer_id" class="form-control" id="customer_id" required=""
                    autocomplete="customer_id-new">
         </div>
 
         <div class="mb-3">
-            <label for="account_id" class="form-label">Account ID</label>
+            <label for="account_id" class="form-label">Your Account ID</label>
             <input type="text" name="account_id" class="form-control" id="account_id" required=""
                    autocomplete="account_id-new">
         </div>
@@ -52,8 +52,12 @@
     <script>
         let token = localStorage.getItem("token");
 
+
         function val() {
             let form = document.getElementById("user_form");
+            let customer_id = document.getElementById("customer_id").value;
+            let account_id = document.getElementById("account_id").value;
+            let target_account_id = document.getElementById("target_account_id").value;
 
             if (form.checkValidity() === false) {
                 this.event.preventDefault();
@@ -88,21 +92,37 @@
                             return
                         }
                         Swal.fire("It is not your account!");
-                    } else {
-                        transfer()
+                    }
+                    else {
+                        Swal.fire({
+                            title: 'Transfer money',
+                            text: 'from id: ' + account_id + ' to id: ' + target_account_id,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Do it',
+                        }).then((result) => {
+                                if (result.isConfirmed) {
+                                    transfer()
+                                } else {
+                                }
+                            }
+                        )
                     }
                 })
         }
 
+
         function transfer() {
-            let status = document.querySelector('[name=status]:checked');
+            let customer_id = document.getElementById("customer_id").value;
+            let account_id = document.getElementById("account_id").value;
 
             let payload = {
                 customer_id: parseInt(document.getElementById("customer_id").value, 10),
                 account_id: parseInt(document.getElementById("account_id").value, 10),
                 amount: parseInt(document.getElementById("amount").value, 10),
                 target_account_id: parseInt(document.getElementById("target_account_id").value, 10),
-
             }
 
             const requestOptions = {

@@ -6,7 +6,7 @@ import (
 )
 
 type AccountRequest struct {
-	CustomerId  uint   `json:"customer_id"`
+	CustomerId  int64  `json:"customer_id"`
 	AccountType string `json:"account_type" binding:"required"`
 	Amount      int64  `json:"amount" binding:"required"`
 }
@@ -17,6 +17,7 @@ type AccountRequest struct {
 
 type AccountResponse struct {
 	AccountId   uint    ` json:"account_id"`
+	CustomerId  uint    ` json:"customer_id"`
 	AccountType string  ` json:"account_type"`
 	Amount      float64 ` json:"amount"`
 	Status      string  ` json:"status"`

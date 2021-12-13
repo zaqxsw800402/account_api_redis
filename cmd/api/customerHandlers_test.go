@@ -7,10 +7,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"net/http"
 	"net/http/httptest"
-	"red/Redis"
 	"red/cmd/api/dto"
 	"red/cmd/api/errs"
 	service2 "red/mocks/service"
+	"red/redis"
 	"testing"
 )
 
@@ -27,7 +27,7 @@ func setUp(t *testing.T) {
 	mockCustomer = service2.NewMockCustomerService(ctrl)
 	// mock redis
 	client, _ := redismock.NewClientMock()
-	db := Redis.NewRedisDb(client)
+	db := redis.New(client)
 
 	ch = CustomerHandler{
 		mockCustomer,

@@ -26,27 +26,22 @@ func (app *application) routes() http.Handler {
 
 		mux.Get("/all-customers/accounts", app.AllAccounts)
 		mux.Get("/all-customers/{id}/accounts", app.AllAccountsWitCustomerID)
-		mux.Get("/all-customers/{id}/accounts/{account_id}", app.OneAccounts)
+		mux.Get("/all-customers/{id}/accounts/{account_id}", app.OneAccount)
+		mux.Get("/all-customers/accounts/0", app.OneAccountBar)
 
 		mux.Get("/all-customers/{id}/accounts/{account_id}/transactions", app.AllTransactions)
 
 		mux.Get("/transfer", app.Transfer)
+		mux.Get("/deposit", app.Deposit)
 
 		mux.Get("/all-users", app.AllUsers)
-		mux.Get("/deposit", app.Deposit)
 	})
 
 	// create a new user
 	mux.Get("/all-users/{id}", app.OneUser)
+	mux.Get("/forgot-password", app.ForgotPassword)
 
-	//mux.Get("/widget/{id}", app.ChargeOnce)
-	//mux.Post("/payment-succeeded", app.PaymentSucceeded)
-	//mux.Get("/receipt", app.Receipt)
-	//
-	//mux.Get("/plans/bronze", app.BronzePlan)
-	//mux.Get("/receipt/bronze", app.BronzePlanReceipt)
-	//
-	//// auth routes
+	// auth routes
 	mux.Get("/login", app.LoginPage)
 	mux.Post("/login", app.PostLoginPage)
 	mux.Get("/logout", app.Logout)
