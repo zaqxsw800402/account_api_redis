@@ -5,6 +5,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"log"
 	"red/mysql"
+	"time"
 )
 
 func main() {
@@ -18,8 +19,7 @@ func main() {
 	}
 
 	// clear data at every 6 am
-	go StartJob("*/1 * * * *", job)
-	//go StartJob("* 6 * * *", job)
+	go StartJob("* 6 * * *", job)
 	select {}
 }
 
@@ -52,16 +52,17 @@ type Job struct {
 func (j Job) Run() {
 	err := j.db.DeleteCustomers()
 	if err != nil {
-		log.Fatal("Error deleting customers")
+		log.Println("Error deleting customers" + err.Error())
 	}
 	accounts, err := j.db.DeleteAccounts()
 	if err != nil {
-		log.Fatal("Error deleting accounts")
+		log.Println("Error deleting accounts" + err.Error())
 	}
 	for _, account := range accounts {
 		err = j.db.DeleteTransactions(account.AccountId)
 		if err != nil {
-			log.Fatal("Error deleting transactions")
+			log.Println("Error deleting transactions" + err.Error())
 		}
 	}
+	log.Printf("%s start clear data\n", time.Now())
 }

@@ -49,7 +49,7 @@ type DB struct {
 }
 
 func (d DB) DeleteCustomers() error {
-	result := d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-1*time.Second)).Delete(&Customer{})
+	result := d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-7*24*time.Hour)).Delete(&Customer{})
 	if err := result.Error; err != nil {
 		return errors.New("unexpected database error when delete customer " + err.Error())
 	}
@@ -58,15 +58,14 @@ func (d DB) DeleteCustomers() error {
 }
 
 func (d DB) DeleteAccounts() ([]Account, error) {
-	//result := d.client.Where("status = 0 and timediff(delete_at, ?) > ? ",time.Now(), time.Duration(time.Second)).Delete(&Account{}, accountID)
-	//result := d.client.Where("status = 0 and delete_at <  ? ", time.Now().Add(-1*time.Second)).Delete(&Account{}, accountID)
 	var accounts []Account
 
-	result := d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-1*time.Second)).Find(&accounts)
+	result := d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-7*24*time.Hour)).Find(&accounts)
 	if err := result.Error; err != nil {
 		return nil, errors.New("unexpected database error when delete account " + err.Error())
 	}
-	result = d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-1*time.Second)).Delete(&Account{})
+
+	result = d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-7*24*time.Hour)).Delete(&Account{})
 	if err := result.Error; err != nil {
 		return nil, errors.New("unexpected database error when delete account " + err.Error())
 	}
