@@ -101,7 +101,7 @@ func (s DefaultAccountService) NewAccount(req dto.AccountRequest) (*dto.AccountR
 	}
 
 	// 轉換成回傳的json格式
-	response := newAccount.ToNewAccountResponseDto()
+	response := newAccount.ToDto()
 	return &response, nil
 }
 

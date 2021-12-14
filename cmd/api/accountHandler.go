@@ -3,6 +3,7 @@ package main
 import "C"
 import (
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"red/cmd/api/dto"
@@ -17,6 +18,7 @@ type AccountHandler struct {
 
 // newAccount 申請新帳戶
 func (app *application) newAccount(c *gin.Context) {
+	userID := c.GetInt("userID")
 
 	var request dto.AccountRequest
 	// 讀取BODY裡的資料
@@ -39,22 +41,29 @@ func (app *application) newAccount(c *gin.Context) {
 	}
 
 	// 建立新帳戶
-	_, appError = app.ah.service.NewAccount(request)
+	account, appError := app.ah.service.NewAccount(request)
 	if appError != nil {
 		//c.JSON(appError.Code, appError.AsMessage())
 		badRequest(c, appError.Code, appError)
 		return
 	}
 
+	app.redis.SaveAccount(c, userID, *account)
+
 	jsonResp(c, http.StatusOK)
 }
 
 func (app *application) deleteAccount(c *gin.Context) {
+	userID := c.GetInt("userID")
+
 	accountID := c.Param("account_id")
 	err := app.ah.service.DeleteAccount(accountID)
 	if err != nil {
 		badRequest(c, http.StatusBadRequest, err)
 	}
+
+	_ = app.redis.DeleteAccount(c, userID, accountID)
+
 }
 
 // makeTransaction 申請交易
@@ -146,12 +155,6 @@ func (app *application) getAllTransactions(c *gin.Context) {
 func (app *application) getAllAccounts(c *gin.Context) {
 	customerId := c.Param("id")
 
-	// 檢查Redis裡是否已經有資料
-	//if account := h.redis.GetAccount(accountId); account != nil {
-	//	c.JSON(http.StatusOK, account)
-	//	return
-	//}
-
 	// 轉換accountId資料格式
 	id, err := strconv.ParseUint(customerId, 10, 64)
 	if err != nil {
@@ -169,33 +172,25 @@ func (app *application) getAllAccounts(c *gin.Context) {
 		c.JSON(http.StatusOK, accounts)
 	}
 
-	// 將資料存進Redis
-	//h.redis.SaveAccount(account)
 }
 
 func (app *application) getAllAccountWithUserID(c *gin.Context) {
 	userID := c.GetInt("userID")
+
+	accounts, _ := app.redis.GetAllAccounts(c, userID)
+	if len(accounts) != 0 {
+		fmt.Println(len(accounts))
+		c.JSON(http.StatusOK, accounts)
+		return
+	}
 
 	customers, appError := app.ch.service.GetAllCustomer(userID)
 	if appError != nil {
 		c.JSON(appError.Code, appError.AsMessage())
 		return
 	}
-	// 檢查Redis裡是否已經有資料
-	//if account := h.redis.GetAccount(accountId); account != nil {
-	//	c.JSON(http.StatusOK, account)
-	//	return
-	//}
 
-	type Response struct {
-		AccountId   uint    ` json:"account_id"`
-		AccountType string  ` json:"account_type"`
-		Amount      float64 ` json:"amount"`
-		Status      string  ` json:"status"`
-		CustomerId  uint    ` json:"customer_id"`
-	}
-
-	resp := make([]Response, 0)
+	resp := make([]dto.AccountResponse, 0)
 	for _, customer := range customers {
 		accounts, appError := app.ah.service.GetAllAccounts(customer.Id)
 		if appError != nil {
@@ -203,17 +198,13 @@ func (app *application) getAllAccountWithUserID(c *gin.Context) {
 			return
 		}
 		for _, a := range accounts {
-			r := Response{
-				AccountId:   a.AccountId,
-				AccountType: a.AccountType,
-				Amount:      a.Amount,
-				Status:      a.Status,
-				CustomerId:  customer.Id,
-			}
-			resp = append(resp, r)
+			resp = append(resp, a)
 		}
 
 	}
+
+	app.redis.SaveAllAccounts(c, userID, resp)
+
 	c.JSON(http.StatusOK, resp)
 
 	// 將資料存進Redis

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"red/cmd/api/dto"
@@ -35,13 +34,6 @@ func (app *application) getAllCustomers(c *gin.Context) {
 
 func (app *application) getCustomer(c *gin.Context) {
 	id := c.Param("id")
-
-	// 檢查時間內讀取的次數，太多次則拒絕提供資料
-	//appError := app.ch.redis.CustomerTimes(id)
-	//if appError != nil {
-	//	c.JSON(appError.Code, appError.AsMessage())
-	//	return
-	//}
 
 	//if customer := app.ch.redis.GetCustomer(id); customer != nil {
 	//	c.JSON(http.StatusOK, customer)
@@ -97,8 +89,7 @@ func (app *application) deleteCustomer(c *gin.Context) {
 		badRequest(c, err.Code, err)
 	}
 
-	err2 := app.redis.DeleteCustomer(userID, customerId)
-	fmt.Println("error := ", err2)
+	_ = app.redis.DeleteCustomer(userID, customerId)
 
 	id, appError := strconv.ParseUint(customerId, 10, 64)
 	if appError != nil {

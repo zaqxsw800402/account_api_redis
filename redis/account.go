@@ -3,62 +3,99 @@ package redis
 import (
 	"context"
 	"fmt"
-	"red/cmd/api/domain"
+	"log"
 	"red/cmd/api/dto"
-	"red/logger"
+	"sort"
+	"strconv"
 	"time"
 )
 
 type Account struct {
 	AccountId   uint    `redis:"AccountId" `
 	CustomerId  uint    `redis:"CustomerId" `
-	OpeningDate string  `redis:"OpeningDate" `
 	AccountType string  `redis:"AccountType" `
 	Amount      float64 `redis:"Amount" `
 	Status      string  `redis:"Status" `
+}
+
+func (d Database) getUserKeyForAccount(userID int) string {
+	return fmt.Sprintf("%d:account", userID)
 }
 
 func (d Database) getUserValueForAccount(userID int, accountID string) string {
 	return fmt.Sprintf("%d:account:%s", userID, accountID)
 }
 
-func (d Database) getUserKeyForAccount(userID int) string {
-	return fmt.Sprintf("%d:customer", userID)
-}
-
 // GetAccount 查詢帳戶資料
-func (d Database) GetAccount(id string) *Account {
-	// 製作redis裡的專屬key
-	key := fmt.Sprintf("%s:%s:response", "Account", id)
-	// 讀取redis裡的資料
-	res := d.RC.HGetAll(ctx, key)
-	// 判斷res裡面是否有值
-	if _, ok := res.Val()["AccountId"]; !ok {
-		return nil
-	}
-
+func (d Database) GetAccount(ctx context.Context, accountKey string) (*Account, error) {
 	// 將資料儲存到結構體裡
 	var account Account
-	if err := res.Scan(&account); err != nil {
-		logger.Error("failed to get account data from redis, error: " + err.Error())
+	err := d.RC.HGetAll(ctx, accountKey).Scan(&account)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
 	}
 
-	return &account
+	return &account, nil
+}
+
+func (d Database) GetAllAccounts(ctx context.Context, userID int) ([]dto.AccountResponse, error) {
+	userKey := d.getUserKeyForAccount(userID)
+	members := d.RC.SMembers(ctx, userKey)
+
+	accounts := make([]dto.AccountResponse, 0)
+
+	for _, member := range members.Val() {
+		account, err := d.GetAccount(ctx, member)
+		if err != nil {
+			return nil, err
+		}
+
+		accounts = append(accounts, dto.AccountResponse{
+			AccountId:   account.AccountId,
+			CustomerId:  account.CustomerId,
+			AccountType: account.AccountType,
+			Amount:      account.Amount,
+			Status:      account.Status,
+		})
+	}
+	sort.SliceStable(accounts, func(i int, j int) bool {
+		return accounts[i].CustomerId < accounts[j].CustomerId
+	})
+
+	return accounts, nil
 }
 
 // SaveAccount 儲存資料到redis裡面
 func (d Database) SaveAccount(ctx context.Context, userID int, a dto.AccountResponse) {
-	userKey := getUserValueForAccount(userID)
+	userKey := d.getUserKeyForAccount(userID)
+	userValue := d.getUserValueForAccount(userID, strconv.Itoa(int(a.AccountId)))
 	// 製作專屬的key
-	key := fmt.Sprintf("%s:%d:response", "Account", c.AccountId)
-	d.RC.HSet(ctx, key,
-		"AccountId", c.AccountId,
-		"CustomerId", c.CustomerId,
-		"OpeningDate", c.OpeningDate,
-		"AccountType", c.AccountType,
-		"Amount", c.Amount,
-		"Status", c.Status,
+	d.RC.SAdd(ctx, userKey, userValue)
+	d.RC.Expire(ctx, userKey, time.Hour*24)
+
+	d.RC.HSet(ctx, userValue,
+		"AccountId", a.AccountId,
+		"CustomerId", a.CustomerId,
+		"AccountType", a.AccountType,
+		"Amount", a.Amount,
+		"Status", a.Status,
 	)
 	// 設定過期時間
-	d.RC.Expire(ctx, key, time.Minute)
+	d.RC.Expire(ctx, userValue, time.Hour*24)
+}
+
+func (d Database) SaveAllAccounts(ctx context.Context, userID int, accounts []dto.AccountResponse) {
+	for _, account := range accounts {
+		d.SaveAccount(ctx, userID, account)
+	}
+}
+
+func (d Database) DeleteAccount(ctx context.Context, userID int, accountID string) error {
+	userValue := d.getUserValueForAccount(userID, accountID)
+	result := d.RC.HSet(ctx, userValue, "Status", 0)
+	if result.Err() != nil {
+		return result.Err()
+	}
+	return nil
 }

@@ -81,7 +81,7 @@ func (d Database) GetAllCustomers(ctx context.Context, userid int) ([]dto.Custom
 	customers := make([]dto.CustomerResponse, 0)
 
 	for _, member := range members.Val() {
-		customer, err := d.GetCustomer(member)
+		customer, err := d.GetCustomer(ctx, member)
 		if err != nil {
 			return nil, err
 		}
@@ -101,7 +101,7 @@ func (d Database) GetAllCustomers(ctx context.Context, userid int) ([]dto.Custom
 }
 
 // GetCustomer 讀取使用者資料
-func (d Database) GetCustomer(customerKey string) (*Customer, error) {
+func (d Database) GetCustomer(ctx context.Context, customerKey string) (*Customer, error) {
 	var customer Customer
 	err := d.RC.HGetAll(ctx, customerKey).Scan(&customer)
 	if err != nil {
