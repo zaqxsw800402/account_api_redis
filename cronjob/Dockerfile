@@ -11,8 +11,6 @@ RUN go mod download
 
 COPY . ./
 
-RUN go build -o /api
+RUN go build -o /cronjob
 
-EXPOSE 4001
-
-CMD [ "/api" ]
+CMD [ "/cronjob" ]
