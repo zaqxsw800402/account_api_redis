@@ -8,27 +8,27 @@ services:
 script:
   #  - docker run -e CI=true USERNAME/react-test npm test
   - docker build -t ichih/bank-api ./api
-#  - docker build -t ichih/bank-web ./web
-#  - docker build -t ichih/bank-nginx ./nginx
-#  - docker build -t ichih/bank-micro ./micro
+  - docker build -t ichih/bank-web ./web
+  - docker build -t ichih/bank-nginx ./nginx
+  - docker build -t ichih/bank-micro ./micro
 
 after_success:
   # login to docker cli
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
   # push to docker hub
-  - docker push ichih/widgets-api
-  - docker push ichih/widgets-web
-  - docker push ichih/widgets-micro
-  - docker push ichih/widgets-nginx
+  - docker push ichih/bank-api
+  - docker push ichih/bank-web
+  - docker push ichih/bank-micro
+  - docker push ichih/bank-nginx
 
-#deploy:
-#  provider: elasticbeanstalk
-#  region: "ap-northeast-1"
-#  app: "widgets"
-#  env: "Widgets-env"
-#  bucket_name: "widgets-ichih"
-#  bucket_path: "docker-widgets"
-#  on:
-#    branch: main
-#  access_key_id: $AWS_ACCESS_KEY
-#  secret_access_key: $AWS_SECRET_KEY
+deploy:
+  provider: elasticbeanstalk
+  region: "ap-northeast-1"
+  app: "bank"
+  env: "Bank-env"
+  bucket_name: "ichih-bank"
+  bucket_path: "docker-bank"
+  on:
+    branch: main
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
