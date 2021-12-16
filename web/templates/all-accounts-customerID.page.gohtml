@@ -1,0 +1,121 @@
+{{template "base" .}}
+
+{{define "title"}}
+    All Accounts in Customer id: {{index .StringMap "id"}}
+{{end}}
+
+{{define "content"}}
+    <h2 class="mt-5">All Accounts in Customer id: {{index .StringMap "id"}}</h2>
+    <hr>
+    <div class="float-end">
+        <a class="btn btn-outline-secondary" href="/admin/all-customers/{{index .StringMap "id"}}/accounts/0">Add
+            Account</a>
+        <a class="btn btn-danger" href="javascript:void(0);" id="deleteBtn">Delete Customer</a>
+
+    </div>
+    <div class="clearfix"></div>
+
+    <table id="user-table" class="table table-striped">
+        <thead>
+        <tr>
+            <th>Account ID</th>
+            <th>Account Type</th>
+            <th>Amount</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+
+{{end}}
+
+{{define "js"}}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        let tbody = document.getElementById("user-table").getElementsByTagName("tbody")[0];
+        let token = localStorage.getItem("token");
+        let delBtn = document.getElementById("deleteBtn");
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const requestOptions = {
+                method: 'get',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token,
+                },
+            }
+
+            fetch("{{.API}}/api/admin/all-customers/{{index .StringMap "id"}}/accounts", requestOptions)
+                .then(response => response.json())
+                .then(function (data) {
+                    if (data) {
+                        data.forEach(function (i) {
+                            let newRow = tbody.insertRow();
+                            let newCell = newRow.insertCell();
+
+                            newCell.innerHTML = `<a href="/admin/all-customers/{{index .StringMap "id"}}/accounts/${i.account_id}/transactions">ID: ${i.account_id}</a>`
+
+                            newCell = newRow.insertCell();
+                            item = document.createTextNode(i.account_type);
+                            newCell.appendChild(item);
+
+                            newCell = newRow.insertCell();
+                            item = document.createTextNode(i.amount);
+                            newCell.appendChild(item);
+
+                            newCell = newRow.insertCell();
+                            if (i.status !== "active") {
+                                newCell.innerHTML = `<span class="badge bg-danger">InActive</span>`;
+                            } else {
+                                newCell.innerHTML = `<span class="badge bg-success">Active</span>`;
+                            }
+
+                        });
+                    } else {
+                        let newRow = tbody.insertRow();
+                        let newCell = newRow.insertCell();
+                        newCell.setAttribute("colspan", "4");
+                        newCell.innerHTML = "no data available";
+                    }
+                })
+        })
+
+        delBtn.addEventListener("click", function () {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to undo this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Delete Customer ID: {{index .StringMap "id"}}'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const requestOptions = {
+                        method: 'post',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + token,
+                        }
+                    }
+
+                    fetch("{{.API}}/api/admin/all-customers/delete/" + {{index .StringMap "id"}}, requestOptions)
+                        .then(response => response.json)
+                        .then(function (data) {
+                            if (data.errors) {
+                                Swal.fire("Error: " + data.message)
+                            } else {
+                                location.href = "/admin/all-customers"
+                            }
+                        })
+                }
+            })
+        })
+
+    </script>
+{{end}}
