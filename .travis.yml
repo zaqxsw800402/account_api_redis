@@ -10,7 +10,7 @@ script:
   - docker build -t ichih/bank-api ./api
   - docker build -t ichih/bank-web ./web
   - docker build -t ichih/bank-nginx ./nginx
-  - docker build -t ichih/bank-micro ./micro
+  - docker build -t ichih/bank-micro ./cronjob
 
 after_success:
   # login to docker cli
@@ -18,7 +18,7 @@ after_success:
   # push to docker hub
   - docker push ichih/bank-api
   - docker push ichih/bank-web
-  - docker push ichih/bank-micro
+  - docker push ichih/bank-cronjob
   - docker push ichih/bank-nginx
 
 deploy:
