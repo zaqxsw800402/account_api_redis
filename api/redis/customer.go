@@ -23,14 +23,16 @@ func New(client *redis.Client) Database {
 	return Database{client}
 }
 
-func GetClient(host string) *redis.Client {
+func GetClient(host string) (*redis.Client, error) {
 	client := redis.NewClient(&redis.Options{
 		//Addr:     "localhost:6379",
 		Addr:     fmt.Sprintf("%s:6379", host),
 		Password: "",
 		DB:       0,
 	})
-	return client
+
+	_, err := client.Ping(ctx).Result()
+	return client, err
 }
 
 type Customer struct {

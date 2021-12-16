@@ -59,7 +59,7 @@ func main() {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Error loading .env file")
 	}
 
 	var cfg config
@@ -79,18 +79,12 @@ func main() {
 
 	flag.Parse()
 
-	//flag.StringVar(&cfg.smtp.host, "smtphost", "smtp.mailtrap.io", "smtp host")
-	//flag.IntVar(&cfg.smtp.port, "smtp port", 587, "smtp port")
-	//cfg.smtp.username = os.Getenv("Username")
-	//cfg.smtp.password = os.Getenv("Password")
-	//cfg.secretKey = os.Getenv("Secret")
-
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	dbClient := domain.GetDBClient(cfg.db.dsn)
+	dbClient, err := domain.GetDBClient(cfg.db.dsn)
 	if err != nil {
-		errorLog.Fatal(err)
+		log.Println("failed to connect mysql " + err.Error())
 	}
 
 	customerRepositoryDb := domain.NewCustomerRepositoryDb(dbClient)
@@ -104,7 +98,10 @@ func main() {
 	uh := UserHandlers{service: service.NewUserService(userRepositoryDb)}
 
 	//建立redis
-	redisCli := redis.GetClient(redisHost)
+	redisCli, err := redis.GetClient(redisHost)
+	if err != nil {
+		log.Println("failed to connect redis " + err.Error())
+	}
 	redisDB := redis.New(redisCli)
 
 	app := &application{

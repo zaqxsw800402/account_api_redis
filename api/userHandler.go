@@ -75,6 +75,10 @@ func (app *application) authenticateToken(c *gin.Context) (*int, *errs.AppError)
 	i, err2 := result.Int()
 	if err2 != nil {
 		log.Println(err2)
+		return nil, &errs.AppError{
+			Code:    http.StatusUnauthorized,
+			Message: "user not in redis",
+		}
 	}
 
 	switch {
@@ -99,15 +103,6 @@ func (app *application) authenticateToken(c *gin.Context) (*int, *errs.AppError)
 	default:
 		return &i, nil
 	}
-
-	//t, err := app.uh.service.GetUserWithToken(token)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//id := int(t.UserID)
-	//return &id, nil
-
 }
 
 func (app *application) newUser(c *gin.Context) {

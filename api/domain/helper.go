@@ -7,17 +7,13 @@ import (
 	"time"
 )
 
-func GetDBClient(dsn string) *gorm.DB {
+func GetDBClient(dsn string) (*gorm.DB, error) {
 	// 建立與資料庫的連結
 	db, err := gorm.Open(mysql.New(mysql.Config{
 		DSN: dsn,
 	}), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
-
-	if err != nil {
-		log.Println("failed to connect mysql " + err.Error())
-	}
 
 	sqlDB, _ := db.DB()
 	// 最多閒置數量
@@ -31,8 +27,8 @@ func GetDBClient(dsn string) *gorm.DB {
 	err = db.AutoMigrate(&Customer{}, &Account{}, &Transaction{}, &User{}, &Token{})
 	if err != nil {
 		log.Println("Failed to create tables" + err.Error())
-		return nil
+		return nil, err
 	}
 
-	return db
+	return db, nil
 }

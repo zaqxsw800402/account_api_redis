@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 )
 
 func (app *application) Auth() gin.HandlerFunc {
@@ -9,6 +10,7 @@ func (app *application) Auth() gin.HandlerFunc {
 		userID, err := app.authenticateToken(c)
 
 		if err != nil {
+			log.Println("auth failed ", err.Error())
 			app.invalidCredentials(c)
 			c.Abort()
 			return
