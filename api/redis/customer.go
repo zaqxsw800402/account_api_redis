@@ -44,8 +44,8 @@ type Customer struct {
 	Status      string `redis:"Status" json:"status"`
 }
 
-func (d Database) getUserValueForCustomer(userID int, customerID string) string {
-	return fmt.Sprintf("%d:customer:%s", userID, customerID)
+func (d Database) getUserValueForCustomer(customerID string) string {
+	return fmt.Sprintf("customer:%s", customerID)
 }
 
 func (d Database) getUserKeyForCustomer(userID int) string {
@@ -56,7 +56,7 @@ func (d Database) getUserKeyForCustomer(userID int) string {
 func (d Database) SaveCustomer(ctx context.Context, userID int, c dto.CustomerResponse) {
 	userKey := d.getUserKeyForCustomer(userID)
 	// add customer to user id
-	userValue := d.getUserValueForCustomer(userID, strconv.Itoa(int(c.Id)))
+	userValue := d.getUserValueForCustomer(strconv.Itoa(int(c.Id)))
 
 	d.RC.SAdd(ctx, userKey, userValue)
 	d.RC.Expire(ctx, userKey, time.Hour*24)
@@ -86,16 +86,30 @@ func (d Database) GetAllCustomers(ctx context.Context, userid int) ([]dto.Custom
 
 	for _, member := range members.Val() {
 		customer, err := d.GetCustomer(ctx, member)
-		if err != nil {
+		switch {
+		case err != nil:
 			return nil, err
+		case customer == nil:
+		case customer.Status == "":
+		default:
+			customers = append(customers, dto.CustomerResponse{
+				Id:          customer.Id,
+				Name:        customer.Name,
+				City:        customer.City,
+				DateOfBirth: customer.DateOfBirth,
+				Status:      customer.Status,
+			})
 		}
-		customers = append(customers, dto.CustomerResponse{
-			Id:          customer.Id,
-			Name:        customer.Name,
-			City:        customer.City,
-			DateOfBirth: customer.DateOfBirth,
-			Status:      customer.Status,
-		})
+		//if err != nil {
+		//	return nil, err
+		//}
+		//customers = append(customers, dto.CustomerResponse{
+		//	Id:          customer.Id,
+		//	Name:        customer.Name,
+		//	City:        customer.City,
+		//	DateOfBirth: customer.DateOfBirth,
+		//	Status:      customer.Status,
+		//})
 	}
 
 	sort.SliceStable(customers, func(i int, j int) bool {
@@ -116,8 +130,8 @@ func (d Database) GetCustomer(ctx context.Context, customerKey string) (*Custome
 	return &customer, nil
 }
 
-func (d Database) DeleteCustomer(userID int, customerID string) error {
-	userValue := d.getUserValueForCustomer(userID, customerID)
+func (d Database) DeleteCustomer(customerID string) error {
+	userValue := d.getUserValueForCustomer(customerID)
 	result := d.RC.HSet(ctx, userValue, "Status", 0)
 	if result.Err() != nil {
 		return result.Err()

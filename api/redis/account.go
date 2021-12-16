@@ -47,17 +47,31 @@ func (d Database) GetAllAccounts(ctx context.Context, userID int) ([]dto.Account
 
 	for _, member := range members.Val() {
 		account, err := d.GetAccount(ctx, member)
-		if err != nil {
+		switch {
+		case err != nil:
 			return nil, err
+		case account == nil:
+		case account.Status == "":
+		default:
+			accounts = append(accounts, dto.AccountResponse{
+				AccountId:   account.AccountId,
+				CustomerId:  account.CustomerId,
+				AccountType: account.AccountType,
+				Amount:      account.Amount,
+				Status:      account.Status,
+			})
 		}
-
-		accounts = append(accounts, dto.AccountResponse{
-			AccountId:   account.AccountId,
-			CustomerId:  account.CustomerId,
-			AccountType: account.AccountType,
-			Amount:      account.Amount,
-			Status:      account.Status,
-		})
+		//if err != nil {
+		//	return nil, err
+		//}
+		//
+		//accounts = append(accounts, dto.AccountResponse{
+		//	AccountId:   account.AccountId,
+		//	CustomerId:  account.CustomerId,
+		//	AccountType: account.AccountType,
+		//	Amount:      account.Amount,
+		//	Status:      account.Status,
+		//})
 	}
 	sort.SliceStable(accounts, func(i int, j int) bool {
 		return accounts[i].CustomerId < accounts[j].CustomerId

@@ -3,7 +3,6 @@ package main
 import "C"
 import (
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"red/dto"
@@ -178,7 +177,7 @@ func (app *application) getAllAccountWithUserID(c *gin.Context) {
 
 	accounts, _ := app.redis.GetAllAccounts(c, userID)
 	if len(accounts) != 0 {
-		fmt.Println(len(accounts))
+		//fmt.Println(len(accounts))
 		c.JSON(http.StatusOK, accounts)
 		return
 	}

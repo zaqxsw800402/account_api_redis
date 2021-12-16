@@ -48,24 +48,34 @@ type DB struct {
 	client *gorm.DB
 }
 
-func (d DB) DeleteCustomers() error {
-	result := d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-7*24*time.Hour)).Delete(&Customer{})
+func (d DB) DeleteCustomers() ([]Customer, error) {
+	var customers []Customer
+	result := d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-1*time.Second)).Find(&customers)
+	//result := d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-7*24*time.Hour)).Find(&customers)
 	if err := result.Error; err != nil {
-		return errors.New("unexpected database error when delete customer " + err.Error())
+		return nil, errors.New("unexpected database error when delete customer " + err.Error())
 	}
 
-	return nil
+	result = d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-1*time.Second)).Delete(&Customer{})
+	//result = d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-7*24*time.Hour)).Delete(&Customer{})
+	if err := result.Error; err != nil {
+		return nil, errors.New("unexpected database error when delete customer " + err.Error())
+	}
+
+	return customers, nil
 }
 
 func (d DB) DeleteAccounts() ([]Account, error) {
 	var accounts []Account
 
-	result := d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-7*24*time.Hour)).Find(&accounts)
+	result := d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-1*time.Second)).Find(&accounts)
+	//result := d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-7*24*time.Hour)).Find(&accounts)
 	if err := result.Error; err != nil {
 		return nil, errors.New("unexpected database error when delete account " + err.Error())
 	}
 
-	result = d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-7*24*time.Hour)).Delete(&Account{})
+	result = d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-1*time.Second)).Delete(&Account{})
+	//result = d.client.Where("status = 0 and deleted_at <  ? ", time.Now().Add(-7*24*time.Hour)).Delete(&Account{})
 	if err := result.Error; err != nil {
 		return nil, errors.New("unexpected database error when delete account " + err.Error())
 	}

@@ -89,16 +89,17 @@ func (app *application) authenticateToken(c *gin.Context) (*int, *errs.AppError)
 		}
 
 		id := int(t.UserID)
-
 		app.redis.SaveUserID(token, id)
 
 		return &id, nil
+
 	case err2 != nil:
 		log.Println(err2)
 		return nil, &errs.AppError{
 			Code:    http.StatusBadRequest,
 			Message: "user not in redis",
 		}
+
 	default:
 		return &i, nil
 	}

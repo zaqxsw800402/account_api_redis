@@ -82,14 +82,14 @@ func (app *application) newCustomer(c *gin.Context) {
 }
 
 func (app *application) deleteCustomer(c *gin.Context) {
-	userID := c.GetInt("userID")
+	//userID := c.GetInt("userID")
 	customerId := c.Param("id")
 	err := app.ch.service.DeleteCustomer(customerId)
 	if err != nil {
 		badRequest(c, err.Code, err)
 	}
 
-	_ = app.redis.DeleteCustomer(userID, customerId)
+	_ = app.redis.DeleteCustomer(customerId)
 
 	id, appError := strconv.ParseUint(customerId, 10, 64)
 	if appError != nil {
