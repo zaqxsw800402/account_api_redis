@@ -13,7 +13,7 @@ import (
 
 type AccountHandler struct {
 	service service.AccountService
-	//redis redis.Database
+	// redis.Database
 }
 
 // newAccount 申請新帳戶
@@ -54,7 +54,6 @@ func (app *application) newAccount(c *gin.Context) {
 }
 
 func (app *application) deleteAccount(c *gin.Context) {
-	userID := c.GetInt("userID")
 
 	accountID := c.Param("account_id")
 	err := app.ah.service.DeleteAccount(accountID)
@@ -62,19 +61,12 @@ func (app *application) deleteAccount(c *gin.Context) {
 		badRequest(c, http.StatusBadRequest, err)
 	}
 
-	_ = app.redis.DeleteAccount(c, userID, accountID)
+	_ = app.redis.DeleteAccount(c, accountID)
 
 }
 
 // makeTransaction 申請交易
 func (app *application) makeTransaction(c *gin.Context) {
-	// 紀錄交易的次數
-	//appError := h.redis.TransactionTimes(accountId)
-	//if appError != nil {
-	//	c.JSON(appError.Code, appError.AsMessage())
-	//	return
-	//}
-
 	// 讀取body裡的資料
 	var request dto.TransactionRequest
 	err := c.ShouldBindJSON(&request)
@@ -95,6 +87,8 @@ func (app *application) makeTransaction(c *gin.Context) {
 }
 
 func (app *application) transfer(c *gin.Context) {
+	userID := c.GetInt("userID")
+
 	var request dto.TransactionRequest
 	err := c.ShouldBindJSON(&request)
 	if err != nil {
@@ -102,7 +96,7 @@ func (app *application) transfer(c *gin.Context) {
 		return
 	}
 
-	_, appError := app.ah.service.Transfer(request)
+	accounts, appError := app.ah.service.Transfer(request)
 	if appError != nil {
 		//c.JSON(appError.Code, appError.AsMessage())
 		badRequest(c, appError.Code, appError)
@@ -110,6 +104,11 @@ func (app *application) transfer(c *gin.Context) {
 		//c.JSON(http.StatusOK, account)
 		jsonResp(c, http.StatusOK)
 	}
+
+	for _, account := range accounts {
+		app.redis.SaveAccount(c, userID, account)
+	}
+
 }
 
 // getAllTransactions 讀取帳戶資料

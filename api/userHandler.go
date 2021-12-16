@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"golang.org/x/crypto/bcrypt"
+	"log"
 	"net/http"
 	"red/dto"
 	"red/errs"
@@ -72,15 +73,22 @@ func (app *application) authenticateToken(c *gin.Context) (*int, *errs.AppError)
 	// redis
 	result := app.redis.GetUserID(token)
 	i, err2 := result.Int()
+	if err2 != nil {
+		log.Println(err2)
+	}
+
 	switch {
 	case err2 == redis.Nil:
-		user, err := app.uh.service.GetUserWithToken(token)
+		t, err := app.uh.service.GetUserWithToken(token)
 		if err != nil {
 			return nil, err
 		}
 
-		app.redis.SaveUserID(token, user.ID)
-		return &user.ID, nil
+		id := int(t.UserID)
+
+		app.redis.SaveUserID(token, id)
+
+		return &id, nil
 
 	case err2 != nil:
 		return nil, &errs.AppError{
@@ -92,17 +100,13 @@ func (app *application) authenticateToken(c *gin.Context) (*int, *errs.AppError)
 		return &i, nil
 	}
 
-}
-
-func (app *application) name() {
-
-}
-
-func (app *application) getAllUsers(c *gin.Context) {
-
-}
-
-func (app *application) getUser(c *gin.Context) {
+	//t, err := app.uh.service.GetUserWithToken(token)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//id := int(t.UserID)
+	//return &id, nil
 
 }
 

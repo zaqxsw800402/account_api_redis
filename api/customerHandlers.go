@@ -106,5 +106,8 @@ func (app *application) deleteCustomer(c *gin.Context) {
 			badRequest(c, http.StatusBadRequest, appError)
 			return
 		}
+
+		_ = app.redis.DeleteAccount(c, strconv.Itoa(int(account.AccountId)))
+
 	}
 }

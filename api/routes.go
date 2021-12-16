@@ -29,7 +29,7 @@ func (app *application) routes() http.Handler {
 	// admin group
 	admin := server.Group("/api/admin", app.Auth())
 
-	admin.GET("/all-users", app.getAllUsers)
+	//admin.GET("/all-users", app.getAllUsers)
 	//建立顧客
 	admin.POST("/all-customers/0", app.newCustomer)
 	//查詢特定顧客的資訊

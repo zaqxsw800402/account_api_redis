@@ -71,6 +71,8 @@ func main() {
 	dbName := os.Getenv("DB_NAME")
 	cfg.db.dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=false", dbUser, dbPassword, dbHost, dbPort, dbName)
 
+	redisHost := os.Getenv("REDIS_HOST")
+
 	flag.IntVar(&cfg.port, "port", 4001, "Server port to listen on")
 	flag.StringVar(&cfg.env, "env", "development", "Application environment {development|production|maintenance}")
 	flag.StringVar(&cfg.frontend, "frontend", "http://localhost:4000", "url to frontend")
@@ -102,7 +104,8 @@ func main() {
 	uh := UserHandlers{service: service.NewUserService(userRepositoryDb)}
 
 	//建立redis
-	redisDB := redis.New()
+	redisCli := redis.GetClient(redisHost)
+	redisDB := redis.New(redisCli)
 
 	app := &application{
 		config:   cfg,

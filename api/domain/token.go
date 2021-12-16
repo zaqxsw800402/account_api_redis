@@ -20,14 +20,14 @@ type Token struct {
 type TokenRepository interface {
 	UpdateToken(Token) (*Token, *errs.AppError)
 	SaveToken(Token) (*Token, *errs.AppError)
-	GetUserByToken(string) (*User, *errs.AppError)
+	GetUserByToken(string) (*Token, *errs.AppError)
 }
 
 func (t Token) ToDto() dto.TokenResponse {
 	return dto.TokenResponse{
 		PlanText: t.PlanText,
 		UserID:   t.UserID,
-		Hash:     []byte(t.Hash),
+		Hash:     t.Hash,
 		Expiry:   t.Expiry,
 		Scope:    dto.ScopeAuthentication,
 	}

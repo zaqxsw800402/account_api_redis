@@ -22,8 +22,8 @@ func (d Database) getUserKeyForAccount(userID int) string {
 	return fmt.Sprintf("%d:account", userID)
 }
 
-func (d Database) getUserValueForAccount(userID int, accountID string) string {
-	return fmt.Sprintf("%d:account:%s", userID, accountID)
+func (d Database) getUserValueForAccount(accountID string) string {
+	return fmt.Sprintf("account:%s", accountID)
 }
 
 // GetAccount 查詢帳戶資料
@@ -69,7 +69,7 @@ func (d Database) GetAllAccounts(ctx context.Context, userID int) ([]dto.Account
 // SaveAccount 儲存資料到redis裡面
 func (d Database) SaveAccount(ctx context.Context, userID int, a dto.AccountResponse) {
 	userKey := d.getUserKeyForAccount(userID)
-	userValue := d.getUserValueForAccount(userID, strconv.Itoa(int(a.AccountId)))
+	userValue := d.getUserValueForAccount(strconv.Itoa(int(a.AccountId)))
 	// 製作專屬的key
 	d.RC.SAdd(ctx, userKey, userValue)
 	d.RC.Expire(ctx, userKey, time.Hour*24)
@@ -91,8 +91,8 @@ func (d Database) SaveAllAccounts(ctx context.Context, userID int, accounts []dt
 	}
 }
 
-func (d Database) DeleteAccount(ctx context.Context, userID int, accountID string) error {
-	userValue := d.getUserValueForAccount(userID, accountID)
+func (d Database) DeleteAccount(ctx context.Context, accountID string) error {
+	userValue := d.getUserValueForAccount(accountID)
 	result := d.RC.HSet(ctx, userValue, "Status", 0)
 	if result.Err() != nil {
 		return result.Err()

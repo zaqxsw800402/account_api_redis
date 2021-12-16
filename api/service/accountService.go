@@ -17,7 +17,7 @@ type AccountService interface {
 	GetALlTransactions(customerID uint, accountId uint) ([]dto.TransactionResponse, *errs.AppError)
 	GetAllAccounts(customerId uint) ([]dto.AccountResponse, *errs.AppError)
 	MakeTransaction(request dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError)
-	Transfer(request dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError)
+	Transfer(request dto.TransactionRequest) ([]dto.AccountResponse, *errs.AppError)
 }
 
 type DefaultAccountService struct {
@@ -150,40 +150,29 @@ func (s DefaultAccountService) MakeTransaction(req dto.TransactionRequest) (*dto
 	return &response, nil
 }
 
-func (s DefaultAccountService) Transfer(req dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError) {
-	// 判斷內容是否有效
-
-	t := domain.Transaction{
+func (s DefaultAccountService) Transfer(req dto.TransactionRequest) ([]dto.AccountResponse, *errs.AppError) {
+	tWithdrawal := domain.Transaction{
 		AccountId:       uint(req.AccountId),
 		Amount:          float64(req.Amount),
 		TransactionType: "transfer out",
 		TransactionDate: time.Now().Format(dbTSLayout),
 	}
 	// 取出帳戶金額
-	account, err := s.repo.ByID(t.AccountId)
+	originalAccount, err := s.repo.ByID(tWithdrawal.AccountId)
 	if err != nil {
 		return nil, err
 	}
 
-	if !account.InactiveAccount() {
+	if !originalAccount.InactiveAccount() {
 		return nil, errs.InactiveError("this account is inactive")
 	}
 
 	// 判斷金額
-	if !account.CanWithdraw(t.Amount) {
+	if !originalAccount.CanWithdraw(tWithdrawal.Amount) {
 		return nil, errs.NewValidationError("Insufficient balance in the account")
 	}
 
-	// 存入交易紀錄
-	t.NewBalance = account.Amount
-	transaction, appError := s.repo.SaveTransaction(t)
-	if appError != nil {
-		return nil, appError
-	}
-
-	// target account
-
-	t = domain.Transaction{
+	tDeposit := domain.Transaction{
 		AccountId:       uint(req.TargetAccountId),
 		Amount:          float64(req.Amount),
 		TransactionType: "transfer in",
@@ -191,20 +180,36 @@ func (s DefaultAccountService) Transfer(req dto.TransactionRequest) (*dto.Transa
 	}
 
 	// 取出帳戶金額
-	targetAccount, err := s.repo.ByID(t.AccountId)
+	targetAccount, err := s.repo.ByID(tDeposit.AccountId)
 	if err != nil {
 		return nil, err
 	}
 
+	if !targetAccount.InactiveAccount() {
+		return nil, errs.InactiveError("target account is inactive")
+	}
+
 	// 存入交易紀錄
-	t.NewBalance = targetAccount.Amount
-	transaction, appError = s.repo.SaveTransaction(t)
+	tWithdrawal.NewBalance = originalAccount.Amount
+	originalTransaction, appError := s.repo.SaveTransaction(tWithdrawal)
 	if appError != nil {
 		return nil, appError
 	}
 
-	// 轉換成回傳的json格式
-	response := transaction.ToDto()
+	originalAccount.Amount = originalTransaction.NewBalance
 
-	return &response, nil
+	// target account
+	// 存入交易紀錄
+	tDeposit.NewBalance = targetAccount.Amount
+	targetTransaction, appError := s.repo.SaveTransaction(tDeposit)
+	if appError != nil {
+		return nil, appError
+	}
+
+	targetAccount.Amount = targetTransaction.NewBalance
+	// 轉換成回傳的json格式
+	resp := make([]dto.AccountResponse, 0)
+	resp = append(resp, originalAccount.ToDto(), targetAccount.ToDto())
+
+	return resp, nil
 }

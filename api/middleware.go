@@ -7,8 +7,10 @@ import (
 func (app *application) Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID, err := app.authenticateToken(c)
+
 		if err != nil {
 			app.invalidCredentials(c)
+			c.Abort()
 			return
 		}
 
@@ -20,6 +22,7 @@ func (app *application) Auth() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
 		c.Set("userID", *userID)
 	}
 }

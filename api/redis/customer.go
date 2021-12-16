@@ -19,13 +19,14 @@ type Database struct {
 	RC *redis.Client
 }
 
-func New() Database {
-	return Database{getClient()}
+func New(client *redis.Client) Database {
+	return Database{client}
 }
 
-func getClient() *redis.Client {
+func GetClient(host string) *redis.Client {
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		//Addr:     "localhost:6379",
+		Addr:     fmt.Sprintf("%s:6379", host),
 		Password: "",
 		DB:       0,
 	})

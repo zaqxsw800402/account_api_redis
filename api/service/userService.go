@@ -12,7 +12,7 @@ type UserService interface {
 	GetUserByID(string) (*dto.UserResponse, *errs.AppError)
 	SaveUser(dto.UserRequest, string) (*dto.UserResponse, *errs.AppError)
 	GetUserByEmail(string) (*dto.UserResponse, *errs.AppError)
-	GetUserWithToken(string) (*dto.UserResponse, *errs.AppError)
+	GetUserWithToken(string) (*domain.Token, *errs.AppError)
 
 	UpdateToken(string) (*dto.TokenResponse, *errs.AppError)
 	SaveToken(dto.UserRequest) (*dto.TokenResponse, *errs.AppError)
@@ -144,8 +144,8 @@ func (s DefaultUserService) SaveToken(userRequest dto.UserRequest) (*dto.TokenRe
 	return &response, nil
 }
 
-func (s DefaultUserService) GetUserWithToken(token string) (*dto.UserResponse, *errs.AppError) {
-	user, err := s.repo.GetUserWithToken(token)
-	response := user.ToDto()
-	return &response, err
+func (s DefaultUserService) GetUserWithToken(token string) (*domain.Token, *errs.AppError) {
+	t, err := s.repo.GetUserWithToken(token)
+	//response := user.ToDto()
+	return t, err
 }

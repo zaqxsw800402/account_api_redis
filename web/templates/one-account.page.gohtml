@@ -54,7 +54,7 @@
             let form = document.getElementById("user_form");
             let status = document.querySelector('[name=status]:checked');
             let token = localStorage.getItem("token");
-            let customer = `{{index .StringMap "id"}}`
+            let customer = "{{index .StringMap "id"}}"
 
 
             if (status === null) {
