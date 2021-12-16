@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/alexedwards/scs/mysqlstore"
-	"github.com/joho/godotenv"
 	"html/template"
 	"log"
 	"net/http"
@@ -57,10 +56,10 @@ func (app *application) serve() error {
 }
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	//err := godotenv.Load()
+	//if err != nil {
+	//	log.Fatal("Error loading .env file")
+	//}
 
 	var cfg config
 

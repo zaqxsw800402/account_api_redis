@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/alexedwards/scs/v2"
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
@@ -57,10 +56,10 @@ func (app *application) serve() error {
 func main() {
 	log.Println("Api Starting...")
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	//err := godotenv.Load()
+	//if err != nil {
+	//	log.Fatal("Error loading .env file")
+	//}
 
 	var cfg config
 
@@ -89,9 +88,6 @@ func main() {
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	dbClient := domain.GetDBClient(cfg.db.dsn)
-	if err != nil {
-		errorLog.Fatal(err)
-	}
 
 	customerRepositoryDb := domain.NewCustomerRepositoryDb(dbClient)
 	accountRepositoryDb := domain.NewAccountRepositoryDb(dbClient)
@@ -118,7 +114,7 @@ func main() {
 		redis:    redisDB,
 	}
 
-	err = app.serve()
+	err := app.serve()
 	if err != nil {
 		app.errorLog.Println(err)
 		log.Fatal(err)
