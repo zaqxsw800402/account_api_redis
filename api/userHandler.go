@@ -73,16 +73,26 @@ func (app *application) authenticateToken(c *gin.Context) (*int, *errs.AppError)
 	// redis
 	result := app.redis.GetUserID(token)
 	i, err2 := result.Int()
-	if err2 != nil {
-		log.Println(err2)
-		return nil, &errs.AppError{
-			Code:    http.StatusUnauthorized,
-			Message: "user not in redis",
-		}
-	}
+	//if err2 != nil {
+	//	log.Println(err2)
+	//	return nil, &errs.AppError{
+	//		Code:    http.StatusUnauthorized,
+	//		Message: "user not in redis",
+	//	}
+	//}
 
 	switch {
 	case err2 == redis.Nil:
+		t, err := app.uh.service.GetUserWithToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		id := int(t.UserID)
+
+		app.redis.SaveUserID(token, id)
+
+		return &id, nil
 	case err2 != nil:
 		log.Println(err2)
 		return nil, &errs.AppError{
@@ -93,16 +103,6 @@ func (app *application) authenticateToken(c *gin.Context) (*int, *errs.AppError)
 		return &i, nil
 	}
 
-	t, err := app.uh.service.GetUserWithToken(token)
-	if err != nil {
-		return nil, err
-	}
-
-	id := int(t.UserID)
-
-	app.redis.SaveUserID(token, id)
-
-	return &id, nil
 }
 
 func (app *application) newUser(c *gin.Context) {
