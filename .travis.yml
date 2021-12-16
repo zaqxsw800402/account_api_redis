@@ -10,7 +10,7 @@ script:
   - docker build -t ichih/bank-api ./api
   - docker build -t ichih/bank-web ./web
   - docker build -t ichih/bank-nginx ./nginx
-  - docker build -t ichih/bank-micro ./cronjob
+  - docker build -t ichih/bank-cronjob ./cronjob
 
 after_success:
   # login to docker cli
