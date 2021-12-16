@@ -31,7 +31,8 @@ func GetClient(host string) (*redis.Client, error) {
 		DB:       0,
 	})
 
-	_, err := client.Ping(ctx).Result()
+	Pong, err := client.Ping(ctx).Result()
+	log.Println("redis connection " + Pong)
 	return client, err
 }
 
