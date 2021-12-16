@@ -1,0 +1,80 @@
+# Use root/example as user/password credentials
+version: '3.1'
+
+services:
+  db:
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: account
+    volumes:
+      - /var/lib/mysql
+    ports:
+      - 3306:3306
+    hostname: db
+
+  redis:
+    restart: always
+    container_name: redis
+    image: redis:6.2
+    ports:
+      - 6379:6379
+#    volumes:
+#      - /data/redis-data
+
+  nginx:
+    build:
+      context: ./nginx
+    depends_on:
+      - backend
+      - web
+    restart: always
+    ports:
+      - "80:80"
+    hostname: nginx
+
+  cronjob:
+    build:
+      context: ./cronjob
+    depends_on:
+      - backend
+    restart: always
+    hostname: cronjob
+
+  backend:
+    build:
+      context: ./api
+    ports:
+      - "4001:4001"
+    depends_on:
+      - web
+    environment:
+#      - DSN="trevor:secret@tcp(db:3306)/widgets"
+      - REDIS_HOST=redis
+      - DB_HOST=db
+      - DB_NAME=account
+      - DB_USER=root
+      - DB_PASSWORD=example
+      - DB_PORT=3306
+
+    restart: always
+    hostname: backend
+
+  web:
+    build:
+      context: ./web
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=account
+      - DB_USER=root
+      - DB_PASSWORD=example
+      - DB_PORT=3306
+
+    restart: always
+    hostname: web

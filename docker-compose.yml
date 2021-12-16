@@ -2,31 +2,17 @@
 version: '3.1'
 
 services:
-  db:
-    image: mysql:8
-    command: --default-authentication-plugin=mysql_native_password
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: example
-      MYSQL_DATABASE: account
-    volumes:
-      - /var/lib/mysql
-    ports:
-      - 3306:3306
-    hostname: db
-
   redis:
+    image: redis:6.2
     restart: always
     container_name: redis
-    image: redis:6.2
     ports:
       - 6379:6379
 #    volumes:
 #      - /data/redis-data
 
   nginx:
-    build:
-      context: ./nginx
+    image: ichih/bank-nginx
     depends_on:
       - backend
       - web
@@ -35,39 +21,49 @@ services:
       - "80:80"
     hostname: nginx
 
+  cronjob:
+    image: ichih/bank-cronjob
+    environment:
+      - REDIS_HOST=$REDIS_HOST
+      - DB_HOST=$DB_HOST
+      - DB_NAME=$DB_NAME
+      - DB_USER=$DB_USER
+      - DB_PASSWORD=$DB_PASSWORD
+      - DB_PORT=$DB_PORT
+    depends_on:
+      - backend
+    restart: always
+    hostname: cronjob
+
   backend:
-    build:
-      context: ./api
+    image: ichih/bank-api
     ports:
       - "4001:4001"
     depends_on:
       - web
     environment:
-#      - DSN="trevor:secret@tcp(db:3306)/widgets"
-      - REDIS_HOST=redis
-      - DB_HOST=db
-      - DB_NAME=account
-      - DB_USER=root
-      - DB_PASSWORD=example
-      - DB_PORT=3306
+      - REDIS_HOST=$REDIS_HOST
+      - DB_HOST=$DB_HOST
+      - DB_NAME=$DB_NAME
+      - DB_USER=$DB_USER
+      - DB_PASSWORD=$DB_PASSWORD
+      - DB_PORT=$DB_PORT
 
     restart: always
     hostname: backend
 
   web:
-    build:
-      context: ./web
+    image: ichih/bank-web
     ports:
       - "4000:4000"
     depends_on:
       - db
     environment:
-#      - DSN="trevor:secret@tcp(db:3306)/widgets"
-      - DB_HOST=db
-      - DB_NAME=account
-      - DB_USER=root
-      - DB_PASSWORD=example
-      - DB_PORT=3306
+      - DB_HOST=$DB_HOST
+      - DB_NAME=$DB_NAME
+      - DB_USER=$DB_USER
+      - DB_PASSWORD=$DB_PASSWORD
+      - DB_PORT=$DB_PORT
 
     restart: always
     hostname: web

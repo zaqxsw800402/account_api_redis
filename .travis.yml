@@ -25,7 +25,7 @@ deploy:
   provider: elasticbeanstalk
   region: "ap-northeast-1"
   app: "bank"
-  env: "Bank-env"
+  env: "Bank-env-1"
   bucket_name: "ichih-bank"
   bucket_path: "docker-bank"
   on:

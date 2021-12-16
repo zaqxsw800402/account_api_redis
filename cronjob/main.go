@@ -19,7 +19,7 @@ func main() {
 	}
 
 	// clear data at every 6 am
-	go StartJob("* 6 * * *", job)
+	go StartJob("*/2 * * * *", job)
 	select {}
 }
 
