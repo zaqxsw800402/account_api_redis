@@ -3,7 +3,6 @@
 ## 架構圖
 ![image](https://github.com/zaqxsw800402/account_api_redis/blob/master/picture/redis.png?raw=true)
 
-
 架設模擬能夠存錢、提錢、轉帳的網頁(僅限本網站) <br>
 ### api(backend)
 主要使用gin、gorm、redis來架設
