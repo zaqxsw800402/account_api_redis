@@ -40,6 +40,7 @@ func (app *application) routes() http.Handler {
 	// create a new user
 	mux.Get("/all-users/{id}", app.OneUser)
 	mux.Get("/forgot-password", app.ForgotPassword)
+	mux.Get("/reset-password", app.ShowResetPassword)
 
 	// auth routes
 	mux.Get("/login", app.LoginPage)

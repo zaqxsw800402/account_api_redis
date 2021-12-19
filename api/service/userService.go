@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"red/domain"
 	"red/dto"
 	"red/errs"
@@ -13,21 +14,17 @@ type UserService interface {
 	SaveUser(dto.UserRequest, string) (*dto.UserResponse, *errs.AppError)
 	GetUserByEmail(string) (*dto.UserResponse, *errs.AppError)
 	GetUserWithToken(string) (*domain.Token, *errs.AppError)
+	UpdatePassword(email, password string) *errs.AppError
 
-	UpdateToken(string) (*dto.TokenResponse, *errs.AppError)
 	SaveToken(dto.UserRequest) (*dto.TokenResponse, *errs.AppError)
 	//GetUser(string) (*dto.TokenResponse, *errs.AppError)
 }
 
 type DefaultUserService struct {
-	repo domain.UserRepositoryDb
+	repo domain.UserRepository
 }
 
-func (s DefaultUserService) UpdateToken(s2 string) (*dto.TokenResponse, *errs.AppError) {
-	panic("implement me")
-}
-
-func NewUserService(repo domain.UserRepositoryDb) DefaultUserService {
+func NewUserService(repo domain.UserRepository) DefaultUserService {
 	return DefaultUserService{repo: repo}
 }
 
@@ -84,23 +81,13 @@ func (s DefaultUserService) GetUserByEmail(email string) (*dto.UserResponse, *er
 	return &response, nil
 }
 
-func (s DefaultUserService) UpdateUser(req dto.UserRequest) (*dto.UserResponse, *errs.AppError) {
-	u := domain.User{
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
-		Email:     req.Email,
-		Password:  req.Password,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-
-	user, err := s.repo.Update(u)
+func (s DefaultUserService) UpdatePassword(email, password string) *errs.AppError {
+	u := domain.User{Email: email, Password: password}
+	_, err := s.repo.UpdatePassword(u)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	response := user.ToDto()
-	return &response, nil
+	return nil
 }
 
 func (s DefaultUserService) SaveToken(userRequest dto.UserRequest) (*dto.TokenResponse, *errs.AppError) {
@@ -146,6 +133,7 @@ func (s DefaultUserService) SaveToken(userRequest dto.UserRequest) (*dto.TokenRe
 
 func (s DefaultUserService) GetUserWithToken(token string) (*domain.Token, *errs.AppError) {
 	t, err := s.repo.GetUserWithToken(token)
+	fmt.Println(t)
 	//response := user.ToDto()
-	return t, err
+	return nil, err
 }

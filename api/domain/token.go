@@ -2,7 +2,6 @@ package domain
 
 import (
 	"red/dto"
-	"red/errs"
 	"time"
 )
 
@@ -15,12 +14,6 @@ type Token struct {
 	CreatedAt time.Time `gorm:"column:created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at"`
 	PlanText  string    `gorm:"-"`
-}
-
-type TokenRepository interface {
-	UpdateToken(Token) (*Token, *errs.AppError)
-	SaveToken(Token) (*Token, *errs.AppError)
-	GetUserByToken(string) (*Token, *errs.AppError)
 }
 
 func (t Token) ToDto() dto.TokenResponse {

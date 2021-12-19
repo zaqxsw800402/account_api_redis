@@ -1,12 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 	"red/dto"
+	"red/encryption"
 	"red/errs"
 	"red/service"
 	"strings"
@@ -127,9 +129,105 @@ func (app *application) newUser(c *gin.Context) {
 		return
 	}
 
+	var nsqMessage struct {
+		Op    string
+		Email string
+	}
+
+	nsqMessage.Op = "newUser"
+	nsqMessage.Email = user.Email
+
+	marshal, err := json.Marshal(nsqMessage)
+	if err != nil {
+		log.Println(err)
+	}
+	err = app.mail.Publish("mailer", marshal)
+	if err != nil {
+		log.Println(err)
+	}
+
 	jsonResp(c, http.StatusOK)
 }
 
-func (app *application) editUser(c *gin.Context) {
+func (app *application) SendPasswordResetEmail(c *gin.Context) {
+	var payload struct {
+		Email string `json:"email"`
+	}
 
+	err := c.ShouldBindJSON(&payload)
+	if err != nil {
+		badRequest(c, http.StatusBadRequest, err)
+		return
+	}
+
+	_, appError := app.uh.service.GetUserByEmail(payload.Email)
+	if appError != nil {
+		badRequest(c, appError.Code, appError)
+		return
+	}
+
+	var nsqMessage struct {
+		Op    string
+		Email string
+	}
+
+	nsqMessage.Op = "forgotPassword"
+	nsqMessage.Email = payload.Email
+
+	marshal, err := json.Marshal(nsqMessage)
+	if err != nil {
+		log.Println(err)
+	}
+	err = app.mail.Publish("mailer", marshal)
+	if err != nil {
+		log.Println(err)
+	}
+
+	jsonResp(c, http.StatusCreated)
+}
+
+func (app *application) ResetPassword(c *gin.Context) {
+	var payload struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	err := c.ShouldBindJSON(&payload)
+	if err != nil {
+		badRequest(c, http.StatusBadRequest, err)
+	}
+
+	encryptor := encryption.Encryption{Key: []byte(app.config.secretKey)}
+	realEmail, err := encryptor.Decrypt(payload.Email)
+	if err != nil {
+		badRequest(c, http.StatusBadRequest, err)
+		return
+	}
+
+	_, appError := app.uh.service.GetUserByEmail(realEmail)
+	if appError != nil {
+		badRequest(c, appError.Code, appError)
+	}
+
+	newHash, err := bcrypt.GenerateFromPassword([]byte(payload.Password), 12)
+	if err != nil {
+		badRequest(c, http.StatusBadRequest, err)
+		return
+	}
+
+	appError = app.uh.service.UpdatePassword(realEmail, string(newHash))
+	if err != nil {
+		badRequest(c, http.StatusBadRequest, appError)
+		return
+	}
+
+	var resp struct {
+		Error   bool   `json:"error"`
+		Message string `json:"message"`
+	}
+
+	resp.Error = false
+	resp.Message = "password changed"
+
+	c.JSON(http.StatusCreated, resp)
 }
