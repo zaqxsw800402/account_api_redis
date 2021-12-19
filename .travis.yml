@@ -16,19 +16,19 @@ after_success:
   # login to docker cli
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
   # push to docker hub
-  - docker push ichih/bank-api
-  - docker push ichih/bank-web
-  - docker push ichih/bank-cronjob
-  - docker push ichih/bank-nginx
+#  - docker push ichih/bank-api
+#  - docker push ichih/bank-web
+#  - docker push ichih/bank-cronjob
+#  - docker push ichih/bank-nginx
 
-deploy:
-  provider: elasticbeanstalk
-  region: "ap-northeast-1"
-  app: "bank"
-  env: "Bank-env-1"
-  bucket_name: "ichih-bank"
-  bucket_path: "docker-bank"
-  on:
-    branch: master
-  access_key_id: $AWS_ACCESS_KEY
-  secret_access_key: $AWS_SECRET_KEY
+#deploy:
+#  provider: elasticbeanstalk
+#  region: "ap-northeast-1"
+#  app: "bank"
+#  env: "Bank-env-1"
+#  bucket_name: "ichih-bank"
+#  bucket_path: "docker-bank"
+#  on:
+#    branch: master
+#  access_key_id: $AWS_ACCESS_KEY
+#  secret_access_key: $AWS_SECRET_KEY
