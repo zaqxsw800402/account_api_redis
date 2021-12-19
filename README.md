@@ -1,47 +1,23 @@
-# account_api_golang
+# Bank
 
-運用gin、gorm、redis來架設api <br>
-log改成用zap <br>
-[監測 log](https://github.com/zaqxsw800402/log_monitor)
-
-# 架構圖
-
+## 架構圖
 ![image](https://github.com/zaqxsw800402/account_api_redis/blob/master/picture/redis.png?raw=true)
 
-# Database Table
 
-顧客表
+架設模擬能夠存錢、提錢、轉帳的網頁(僅限本網站) <br>
+### api(backend)
+主要使用gin、gorm、redis來架設
+### web(frontend)
+主要使用html、js
+### cronjob
+固定時間來清理一些軟刪除的資料，目前設置每兩分鐘清一次
+### mailer
+負責提供寄信的微服務(開辦帳號，密碼重設)，目前收發信件只能在[mailtrap](https://mailtrap.io/) 裡面查看
+### redis
+用在 all customer, all account 提供資料的緩存，及middleware 驗證的緩存 
+### nsq
+用來傳遞資料給mailer發送信件
+### travis.ci
+練習ci cd到aws ebs上
 
-&ensp;&ensp;顧客的資料
 
-帳戶表
-
-&ensp;&ensp;顧客創立哪些帳戶
-
-交易表
-
-&ensp;&ensp;記錄所有交易紀錄
-
-# Redis
-在一分鐘內只能申請五次帳號 <BR>
-在一分鐘內只能申請五次交易  <BR>
-提供GET的緩存<BR>
-
-# URL
-/customers
-
-&ensp;&ensp;&ensp;get: 查詢全部顧客<BR>
-&ensp;&ensp;&ensp;post: 增加顧客<BR>
-
-/custoemer/:id
-
-&ensp;&ensp;&ensp;get:查詢特定的顧客
-
-/customer/:id/account
-
-&ensp;&ensp;&ensp;post: 在特定的顧客下創辦帳戶
-
-/customer/:id/account/:account_id
-
-&ensp;&ensp;&ensp;post: 在該帳戶下存提款 <BR>
-&ensp;&ensp;&ensp;get: 查詢該帳戶的交易紀錄<BR>
