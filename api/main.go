@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/alexedwards/scs/v2"
 	"github.com/joho/godotenv"
+	"github.com/nsqio/go-nsq"
 	"log"
 	"net/http"
 	"os"
@@ -14,8 +14,6 @@ import (
 	"time"
 )
 
-const version = "1.0.0"
-
 type config struct {
 	port int
 	env  string
@@ -23,20 +21,19 @@ type config struct {
 		dsn string
 	}
 
-	secretKey string
 	frontend  string
+	secretKey string
 }
 
 type application struct {
 	config   config
 	infoLog  *log.Logger
 	errorLog *log.Logger
-	version  string
 	ch       CustomerHandler
 	ah       AccountHandler
 	uh       UserHandlers
 	redis    redis.Database
-	session  *scs.SessionManager
+	mail     *nsq.Producer
 }
 
 func (app *application) serve() error {
@@ -71,6 +68,8 @@ func main() {
 	dbName := os.Getenv("DB_NAME")
 	cfg.db.dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=false", dbUser, dbPassword, dbHost, dbPort, dbName)
 
+	cfg.secretKey = os.Getenv("Secret")
+
 	redisHost := os.Getenv("REDIS_HOST")
 
 	flag.IntVar(&cfg.port, "port", 4001, "Server port to listen on")
@@ -104,15 +103,26 @@ func main() {
 	}
 	redisDB := redis.New(redisCli)
 
+	nsqHost := os.Getenv("NSQ_HOST")
+	nsqAddr := fmt.Sprintf("%s:4150", nsqHost)
+	nsqConfig := nsq.NewConfig()
+	producer, err := nsq.NewProducer(nsqAddr, nsqConfig)
+	if err != nil {
+		log.Println("connection to nsq failed: " + err.Error())
+	}
+	defer producer.Stop()
+
+	producer.Publish("mailer", []byte("start"))
+
 	app := &application{
 		config:   cfg,
 		infoLog:  infoLog,
 		errorLog: errorLog,
-		version:  version,
 		ch:       ch,
 		ah:       ah,
 		uh:       uh,
 		redis:    redisDB,
+		mail:     producer,
 	}
 
 	err = app.serve()

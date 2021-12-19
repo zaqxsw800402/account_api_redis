@@ -157,6 +157,10 @@ func (s DefaultAccountService) Transfer(req dto.TransactionRequest) ([]dto.Accou
 		TransactionType: "transfer out",
 		TransactionDate: time.Now().Format(dbTSLayout),
 	}
+
+	if req.AccountId == req.TargetAccountId {
+		return nil, errs.NewValidationError("target account should be different with account")
+	}
 	// 取出帳戶金額
 	originalAccount, err := s.repo.ByID(tWithdrawal.AccountId)
 	if err != nil {

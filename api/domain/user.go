@@ -22,11 +22,11 @@ type UserRepository interface {
 	ByID(string) (*User, *errs.AppError)
 	ByEmail(string) (*User, *errs.AppError)
 	FindAll() ([]User, *errs.AppError)
-	Update(User) (*User, *errs.AppError)
+	UpdatePassword(User) (*User, *errs.AppError)
 
 	UpdateToken(Token) (*Token, *errs.AppError)
 	SaveToken(Token) (*Token, *errs.AppError)
-	GetUserWithToken(string) (*User, *errs.AppError)
+	GetUserWithToken(string) (*Token, *errs.AppError)
 }
 
 func (u User) ToDto() dto.UserResponse {

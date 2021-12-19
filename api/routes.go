@@ -22,6 +22,8 @@ func (app *application) routes() http.Handler {
 
 	server.POST("/api/authenticate", app.createAuthToken)
 	server.POST("/api/all-users", app.newUser)
+	server.POST("/api/forgot-password", app.SendPasswordResetEmail)
+	server.POST("/api/reset-password", app.ResetPassword)
 
 	// 使用zap來記錄api的使用
 	//server.Use(logger.GinLogger(), logger.GinRecovery(true))
