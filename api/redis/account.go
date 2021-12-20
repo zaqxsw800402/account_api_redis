@@ -113,3 +113,10 @@ func (d Database) DeleteAccount(ctx context.Context, accountID string) error {
 	}
 	return nil
 }
+
+func (d Database) UpdateAmount(ctx context.Context, accountID string, amount float64) {
+	userValue := d.getUserValueForAccount(accountID)
+	d.RC.HSet(ctx, userValue, "Amount", amount)
+	d.RC.Expire(ctx, userValue, time.Hour*24)
+
+}

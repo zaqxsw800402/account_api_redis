@@ -58,6 +58,7 @@ func (app *application) deleteAccount(c *gin.Context) {
 	err := app.ah.service.DeleteAccount(accountID)
 	if err != nil {
 		badRequest(c, http.StatusBadRequest, err)
+		return
 	}
 
 	_ = app.redis.DeleteAccount(c, accountID)
@@ -75,14 +76,18 @@ func (app *application) makeTransaction(c *gin.Context) {
 	}
 
 	// 申請交易
-	_, appError := app.ah.service.MakeTransaction(request)
+	t, appError := app.ah.service.MakeTransaction(request)
 	if appError != nil {
 		//c.JSON(appError.Code, appError.AsMessage())
 		badRequest(c, appError.Code, appError)
-	} else {
-		//c.JSON(http.StatusOK, account)
-		jsonResp(c, http.StatusOK)
+		return
 	}
+	// update amount
+	app.redis.UpdateAmount(c, strconv.FormatInt(request.AccountId, 10), t.NewBalance)
+
+	//c.JSON(http.StatusOK, account)
+	jsonResp(c, http.StatusOK)
+
 }
 
 func (app *application) transfer(c *gin.Context) {
@@ -99,14 +104,15 @@ func (app *application) transfer(c *gin.Context) {
 	if appError != nil {
 		//c.JSON(appError.Code, appError.AsMessage())
 		badRequest(c, appError.Code, appError)
-	} else {
-		//c.JSON(http.StatusOK, account)
-		jsonResp(c, http.StatusOK)
+		return
 	}
 
 	for _, account := range accounts {
 		app.redis.SaveAccount(c, userID, account)
+		app.redis.UpdateAmount(c, strconv.FormatInt(int64(account.AccountId), 10), account.Amount)
 	}
+
+	jsonResp(c, http.StatusOK)
 
 }
 

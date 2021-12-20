@@ -24,6 +24,7 @@ func (app *application) getAllCustomers(c *gin.Context) {
 	customers, err2 := app.ch.service.GetAllCustomers(userID)
 	if err2 != nil {
 		badRequest(c, err2.Code, err2)
+		return
 	}
 
 	app.redis.SaveAllCustomers(c, userID, customers)
@@ -78,6 +79,7 @@ func (app *application) deleteCustomer(c *gin.Context) {
 	err := app.ch.service.DeleteCustomer(customerId)
 	if err != nil {
 		badRequest(c, err.Code, err)
+		return
 	}
 
 	_ = app.redis.DeleteCustomer(customerId)
