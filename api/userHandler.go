@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"golang.org/x/crypto/bcrypt"
@@ -128,23 +127,23 @@ func (app *application) newUser(c *gin.Context) {
 		badRequest(c, appError.Code, appError)
 		return
 	}
-
-	var nsqMessage struct {
-		Op    string
-		Email string
-	}
-
-	nsqMessage.Op = "newUser"
-	nsqMessage.Email = user.Email
-
-	marshal, err := json.Marshal(nsqMessage)
-	if err != nil {
-		log.Println(err)
-	}
-	err = app.mail.Publish("mailer", marshal)
-	if err != nil {
-		log.Println(err)
-	}
+	//
+	//var nsqMessage struct {
+	//	Op    string
+	//	Email string
+	//}
+	//
+	//nsqMessage.Op = "newUser"
+	//nsqMessage.Email = user.Email
+	//
+	//marshal, err := json.Marshal(nsqMessage)
+	//if err != nil {
+	//	log.Println(err)
+	//}
+	//err = app.mail.Publish("mailer", marshal)
+	//if err != nil {
+	//	log.Println(err)
+	//}
 
 	jsonResp(c, http.StatusOK)
 }
@@ -166,22 +165,22 @@ func (app *application) SendPasswordResetEmail(c *gin.Context) {
 		return
 	}
 
-	var nsqMessage struct {
-		Op    string
-		Email string
-	}
-
-	nsqMessage.Op = "forgotPassword"
-	nsqMessage.Email = payload.Email
-
-	marshal, err := json.Marshal(nsqMessage)
-	if err != nil {
-		log.Println(err)
-	}
-	err = app.mail.Publish("mailer", marshal)
-	if err != nil {
-		log.Println(err)
-	}
+	//var nsqMessage struct {
+	//	Op    string
+	//	Email string
+	//}
+	//
+	//nsqMessage.Op = "forgotPassword"
+	//nsqMessage.Email = payload.Email
+	//
+	//marshal, err := json.Marshal(nsqMessage)
+	//if err != nil {
+	//	log.Println(err)
+	//}
+	//err = app.mail.Publish("mailer", marshal)
+	//if err != nil {
+	//	log.Println(err)
+	//}
 
 	jsonResp(c, http.StatusCreated)
 }
@@ -195,6 +194,7 @@ func (app *application) ResetPassword(c *gin.Context) {
 	err := c.ShouldBindJSON(&payload)
 	if err != nil {
 		badRequest(c, http.StatusBadRequest, err)
+		return
 	}
 
 	encryptor := encryption.Encryption{Key: []byte(app.config.secretKey)}
@@ -207,6 +207,7 @@ func (app *application) ResetPassword(c *gin.Context) {
 	_, appError := app.uh.service.GetUserByEmail(realEmail)
 	if appError != nil {
 		badRequest(c, appError.Code, appError)
+		return
 	}
 
 	newHash, err := bcrypt.GenerateFromPassword([]byte(payload.Password), 12)

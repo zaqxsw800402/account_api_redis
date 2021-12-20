@@ -58,53 +58,53 @@ services:
     restart: always
     hostname: web
 
-
-  mailer:
-    image: ichih/bank-mailer
+#
+#  mailer:
+#    image: ichih/bank-mailer
+##    depends_on:
+##      - db
+#    environment:
+#      - REDIS_HOST=$REDIS_HOST
+#      - DB_HOST=$DB_HOST
+#      - DB_NAME=$DB_NAME
+#      - DB_USER=$DB_USER
+#      - DB_PASSWORD=$DB_PASSWORD
+#      - DB_PORT=$DB_PORT
+#      - NSQ_HOST=$NSQ_HOST
+#      - Frontend=$Frontend
+#      - Secret=$Secret
+#      - Username=$Username
+#      - Password=$Password
+#
+#    restart: always
+#    hostname: mailer
+#
+#  nsqlookupd:
+#    image: nsqio/nsq
+#    command: /nsqlookupd
+#    ports:
+#      - "4160:4160"
+#      - "4161:4161"
+#    hostname: nsqlookupd
+#    container_name: nsqlookupd
+#
+#  nsqd:
+#    image: nsqio/nsq
+#    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=nsqd
 #    depends_on:
-#      - db
-    environment:
-      - REDIS_HOST=$REDIS_HOST
-      - DB_HOST=$DB_HOST
-      - DB_NAME=$DB_NAME
-      - DB_USER=$DB_USER
-      - DB_PASSWORD=$DB_PASSWORD
-      - DB_PORT=$DB_PORT
-      - NSQ_HOST=$NSQ_HOST
-      - Frontend=$Frontend
-      - Secret=$Secret
-      - Username=$Username
-      - Password=$Password
-
-    restart: always
-    hostname: mailer
-
-  nsqlookupd:
-    image: nsqio/nsq
-    command: /nsqlookupd
-    ports:
-      - "4160:4160"
-      - "4161:4161"
-    hostname: nsqlookupd
-    container_name: nsqlookupd
-
-  nsqd:
-    image: nsqio/nsq
-    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=nsqd
-    depends_on:
-      - nsqlookupd
-    ports:
-      - "4150:4150"
-      - "4151:4151"
-    hostname: nsqd
-    container_name: nsqd
-
-  nsqadmin:
-    image: nsqio/nsq
-    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
-    depends_on:
-      - nsqlookupd
-    ports:
-      - "4171:4171"
-    hostname: nsqadmin
-    container_name: nsqadmin
+#      - nsqlookupd
+#    ports:
+#      - "4150:4150"
+#      - "4151:4151"
+#    hostname: nsqd
+#    container_name: nsqd
+#
+#  nsqadmin:
+#    image: nsqio/nsq
+#    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
+#    depends_on:
+#      - nsqlookupd
+#    ports:
+#      - "4171:4171"
+#    hostname: nsqadmin
+#    container_name: nsqadmin
