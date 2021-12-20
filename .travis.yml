@@ -16,19 +16,21 @@ after_success:
   - docker build -t ichih/bank-web ./web
   - docker build -t ichih/bank-nginx ./nginx
   - docker build -t ichih/bank-cronjob ./cronjob
-#  - docker push ichih/bank-api
-#  - docker push ichih/bank-web
-#  - docker push ichih/bank-cronjob
-#  - docker push ichih/bank-nginx
+  - docker build -t ichih/bank-mailer ./mailer
+  - docker push ichih/bank-api
+  - docker push ichih/bank-web
+  - docker push ichih/bank-cronjob
+  - docker push ichih/bank-nginx
+  - docker push ichih/bank-mailer
 
-#deploy:
-#  provider: elasticbeanstalk
-#  region: "ap-northeast-1"
-#  app: "bank"
-#  env: "Bank-env-1"
-#  bucket_name: "ichih-bank"
-#  bucket_path: "docker-bank"
-#  on:
-#    branch: master
-#  access_key_id: $AWS_ACCESS_KEY
-#  secret_access_key: $AWS_SECRET_KEY
+deploy:
+  provider: elasticbeanstalk
+  region: "ap-northeast-1"
+  app: "bank"
+  env: "Bank-env"
+  bucket_name: "ichih-bank"
+  bucket_path: "docker-bank"
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY

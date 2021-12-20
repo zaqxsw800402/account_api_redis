@@ -11,8 +11,8 @@ RUN go mod download
 
 COPY . ./
 
-RUN go build -o /api
+RUN go build -o /mailer
 
-EXPOSE 4001
+EXPOSE 4002
 
-CMD [ "/api" ]
+CMD [ "/mailer" ]

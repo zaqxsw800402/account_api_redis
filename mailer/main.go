@@ -53,7 +53,11 @@ func main() {
 
 	//新增一個handler來處理收到訊息時動作
 	consumer.AddHandler(app)
-	err = consumer.ConnectToNSQLookupd("nsqd:4161")
+
+	nsqHost := os.Getenv("NSQ_HOST")
+
+	//err = consumer.ConnectToNSQLookupd(nsqHost)
+	err = consumer.ConnectToNSQD(nsqHost)
 	if err != nil {
 		log.Fatal(err)
 	}
