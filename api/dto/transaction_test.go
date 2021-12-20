@@ -1,29 +1,29 @@
 package dto
 
 import (
-	"red/cmd/api/errs"
+	"red/errs"
 	"reflect"
 	"testing"
 )
 
 func TestTransactionRequest_Validate(t *testing.T) {
 	type fields struct {
-		AccountId       uint
-		Amount          float64
+		AccountId       int64
+		Amount          int64
 		TransactionType string
 		TransactionDate string
-		CustomerId      string
+		CustomerId      int64
 	}
 	tests := []struct {
 		name   string
 		fields fields
 		want   *errs.AppError
 	}{
-		{"SuccessDeposit", fields{uint(1), 6000, "deposit", "", "1"}, nil},
-		{"SuccessWithdraw", fields{uint(1), 6000, "withdrawal", "", "1"}, nil},
-		{"FailedAmount", fields{uint(1), -4000, "withdrawal", "", "1"},
+		{"SuccessDeposit", fields{1, 6000, "deposit", "", 1}, nil},
+		{"SuccessWithdraw", fields{1, 6000, "withdrawal", "", 1}, nil},
+		{"FailedAmount", fields{1, -4000, "withdrawal", "", 1},
 			errs.NewValidationError("Amount cannot be less than zero")},
-		{"FailedTransactionType", fields{uint(1), 6000, "wi", "", "1"},
+		{"FailedTransactionType", fields{1, 6000, "wi", "", 1},
 			errs.NewValidationError("transaction type can only be deposit or withdrawal")},
 	}
 	for _, tt := range tests {

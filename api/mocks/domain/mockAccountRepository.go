@@ -5,8 +5,8 @@
 package domain
 
 import (
-	domain2 "red/cmd/api/domain"
-	"red/cmd/api/errs"
+	domain "red/domain"
+	errs "red/errs"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -35,26 +35,55 @@ func (m *MockAccountRepository) EXPECT() *MockAccountRepositoryMockRecorder {
 	return m.recorder
 }
 
-// FindBy mocks base method.
-func (m *MockAccountRepository) ByID(arg0 uint) (*domain2.Account, *errs.AppError) {
+// ByCustomerID mocks base method.
+func (m *MockAccountRepository) ByCustomerID(arg0 uint) ([]domain.Account, *errs.AppError) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ByID", arg0)
-	ret0, _ := ret[0].(*domain2.Account)
+	ret := m.ctrl.Call(m, "ByCustomerID", arg0)
+	ret0, _ := ret[0].([]domain.Account)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
 }
 
-// FindBy indicates an expected call of FindBy.
-func (mr *MockAccountRepositoryMockRecorder) FindBy(arg0 interface{}) *gomock.Call {
+// ByCustomerID indicates an expected call of ByCustomerID.
+func (mr *MockAccountRepositoryMockRecorder) ByCustomerID(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ByCustomerID", reflect.TypeOf((*MockAccountRepository)(nil).ByCustomerID), arg0)
+}
+
+// ByID mocks base method.
+func (m *MockAccountRepository) ByID(arg0 uint) (*domain.Account, *errs.AppError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ByID", arg0)
+	ret0, _ := ret[0].(*domain.Account)
+	ret1, _ := ret[1].(*errs.AppError)
+	return ret0, ret1
+}
+
+// ByID indicates an expected call of ByID.
+func (mr *MockAccountRepositoryMockRecorder) ByID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ByID", reflect.TypeOf((*MockAccountRepository)(nil).ByID), arg0)
 }
 
-// Save mocks base method.
-func (m *MockAccountRepository) Save(arg0 domain2.Account) (*domain2.Account, *errs.AppError) {
+// Delete mocks base method.
+func (m *MockAccountRepository) Delete(arg0 string) *errs.AppError {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveUser", arg0)
-	ret0, _ := ret[0].(*domain2.Account)
+	ret := m.ctrl.Call(m, "Delete", arg0)
+	ret0, _ := ret[0].(*errs.AppError)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockAccountRepositoryMockRecorder) Delete(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAccountRepository)(nil).Delete), arg0)
+}
+
+// Save mocks base method.
+func (m *MockAccountRepository) Save(arg0 domain.Account) (*domain.Account, *errs.AppError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Save", arg0)
+	ret0, _ := ret[0].(*domain.Account)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
 }
@@ -62,14 +91,14 @@ func (m *MockAccountRepository) Save(arg0 domain2.Account) (*domain2.Account, *e
 // Save indicates an expected call of Save.
 func (mr *MockAccountRepositoryMockRecorder) Save(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUser", reflect.TypeOf((*MockAccountRepository)(nil).Save), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockAccountRepository)(nil).Save), arg0)
 }
 
 // SaveTransaction mocks base method.
-func (m *MockAccountRepository) SaveTransaction(arg0 domain2.Transaction) (*domain2.Transaction, *errs.AppError) {
+func (m *MockAccountRepository) SaveTransaction(arg0 domain.Transaction) (*domain.Transaction, *errs.AppError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveTransaction", arg0)
-	ret0, _ := ret[0].(*domain2.Transaction)
+	ret0, _ := ret[0].(*domain.Transaction)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
 }
@@ -78,4 +107,34 @@ func (m *MockAccountRepository) SaveTransaction(arg0 domain2.Transaction) (*doma
 func (mr *MockAccountRepositoryMockRecorder) SaveTransaction(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveTransaction", reflect.TypeOf((*MockAccountRepository)(nil).SaveTransaction), arg0)
+}
+
+// TransactionsByID mocks base method.
+func (m *MockAccountRepository) TransactionsByID(arg0 uint) ([]domain.Transaction, *errs.AppError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TransactionsByID", arg0)
+	ret0, _ := ret[0].([]domain.Transaction)
+	ret1, _ := ret[1].(*errs.AppError)
+	return ret0, ret1
+}
+
+// TransactionsByID indicates an expected call of TransactionsByID.
+func (mr *MockAccountRepositoryMockRecorder) TransactionsByID(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransactionsByID", reflect.TypeOf((*MockAccountRepository)(nil).TransactionsByID), arg0)
+}
+
+// Update mocks base method.
+func (m *MockAccountRepository) Update(arg0 domain.Account) (*domain.Account, *errs.AppError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", arg0)
+	ret0, _ := ret[0].(*domain.Account)
+	ret1, _ := ret[1].(*errs.AppError)
+	return ret0, ret1
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockAccountRepositoryMockRecorder) Update(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockAccountRepository)(nil).Update), arg0)
 }

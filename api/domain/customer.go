@@ -13,7 +13,6 @@ type Customer struct {
 	UserID      uint `gorm:"column:user_id"`
 	Name        string
 	City        string
-	Zipcode     string
 	DateOfBirth string
 	Status      string `gorm:"default:1"`
 	//Accounts    []Account `gorm:"foreignKey:CustomerId;references:Id"`

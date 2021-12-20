@@ -2,109 +2,133 @@ package main
 
 import (
 	"bytes"
-	"github.com/gin-gonic/gin"
-	"github.com/golang/mock/gomock"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"red/cmd/api/domain"
-	dto2 "red/cmd/api/dto"
-	"red/cmd/api/errs"
-	service2 "red/mocks/service"
-	"red/redis"
+	"red/dto"
+	"red/errs"
 	"reflect"
 	"testing"
 )
 
-func setUpAccount(t *testing.T) {
-	router = gin.Default()
-	// mock service
-	ctrl := gomock.NewController(t)
-	mockAccount = service2.NewMockAccountService(ctrl)
-	// mock redis
-	client, _ := redismock.NewClientMock()
-	db := redis.New(client)
-
-	ah = AccountHandler{
-		mockAccount,
-		db,
-	}
-}
-
 func TestAccountHandler_NewAccount_Success(t *testing.T) {
 	//Arrange
-	//set body
-	setUpAccount(t)
+	setUp(t)
 
 	body := `{
-    "account_type": "saving",
-    "amount" : 6000
+	"customer_id": 1,
+	"account_type": "saving",
+	"amount" : 6000
 }`
 	b := bytes.NewBufferString(body)
-	request, _ := http.NewRequest(http.MethodPost, "/customers/3/account", b)
 
-	account := dto2.AccountRequest{
-		CustomerId:  3,
+	expectedCustomer := dto.CustomerResponse{
+		Id:          1,
+		Name:        "Ivy",
+		City:        "Taiwan",
+		DateOfBirth: "1978-12-15",
+		Status:      "active",
+	}
+	mockCustomer.EXPECT().GetCustomer("1").Return(&expectedCustomer, nil)
+
+	account := dto.AccountRequest{
+		CustomerId:  1,
 		AccountType: "saving",
 		Amount:      6000,
 	}
 
-	expectedAccount := dto2.AccountResponse{
-		AccountId: 1,
+	expectedAccount := dto.AccountResponse{
+		AccountId:   1,
+		CustomerId:  1,
+		AccountType: "saving",
+		Amount:      6000,
+		Status:      "active",
 	}
 
 	mockAccount.EXPECT().NewAccount(account).Return(&expectedAccount, nil)
-	router.POST("/customers/:id/account", ah.newAccount)
 
+	request, err := http.NewRequest(http.MethodPost, "/api/admin/all-customers/accounts/0", b)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	router.POST("/api/admin/all-customers/accounts/0", app.newAccount)
 	recorder := httptest.NewRecorder()
 	router.ServeHTTP(recorder, request)
 
-	response := `{"account_id":1}`
+	response := `{"error":false,"message":""}`
 
 	if exp := recorder.Body.String(); exp != response {
 		t.Errorf("Failed test while create new account, \nexpected: %v\ngot: %v", exp, response)
 	}
 }
 
-func TestAccountHandler_NewAccount_FailedCreate(t *testing.T) {
+func TestAccountHandler_NewAccount_Failed_inactive(t *testing.T) {
 	//Arrange
-	//set body
-	setUpAccount(t)
+	setUp(t)
 
 	body := `{
-    "account_type": "saving",
-    "amount" : 6000
+	"customer_id": 1,
+	"account_type": "saving",
+	"amount" : 6000
 }`
 	b := bytes.NewBufferString(body)
-	request, _ := http.NewRequest(http.MethodPost, "/customers/3/account", b)
+	request, _ := http.NewRequest(http.MethodPost, "/api/admin/all-customers/accounts", b)
 
-	account := dto2.AccountRequest{
-		CustomerId:  3,
-		AccountType: "saving",
-		Amount:      6000,
+	expectedCustomer := dto.CustomerResponse{
+		Id:          1,
+		Name:        "Ivy",
+		City:        "Taiwan",
+		DateOfBirth: "1978-12-15",
+		Status:      "inactive",
 	}
+	mockCustomer.EXPECT().GetCustomer("1").Return(&expectedCustomer, nil)
 
-	mockAccount.EXPECT().NewAccount(account).Return(nil, errs.NewUnexpectedError("Unexpected error from database"))
-	router.POST("/customers/:id/account", ah.newAccount)
-
+	router.POST("/api/admin/all-customers/accounts", app.newAccount)
 	recorder := httptest.NewRecorder()
 	router.ServeHTTP(recorder, request)
 
-	if recorder.Code != http.StatusInternalServerError {
-		t.Error("Test failed while validating status code")
-	}
+	response := `{"error":true,"message":"this customer is inactive"}`
 
+	if exp := recorder.Body.String(); exp != response {
+		t.Errorf("Failed test while create new account, \nexpected: %v\ngot: %v", exp, response)
+	}
+}
+
+func TestAccountHandler_NewAccount_Failed_NotFound(t *testing.T) {
+	//Arrange
+	setUp(t)
+
+	body := `{
+	"customer_id": 1,
+	"account_type": "saving",
+	"amount" : 6000
+}`
+	b := bytes.NewBufferString(body)
+	request, _ := http.NewRequest(http.MethodPost, "/api/admin/all-customers/accounts", b)
+
+	mockCustomer.EXPECT().GetCustomer("1").Return(nil, errs.NewNotFoundError("account not found"))
+
+	router.POST("/api/admin/all-customers/accounts", app.newAccount)
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+
+	response := `{"error":true,"message":"account not found"}`
+
+	if exp := recorder.Body.String(); exp != response {
+		t.Errorf("Failed test while create new account, \nexpected: %v\ngot: %v", exp, response)
+	}
 }
 
 func TestAccountHandler_NewAccount_BadRequest(t *testing.T) {
 	//Arrange
-	//set body
-	setUpAccount(t)
+	setUp(t)
 
 	body := `{"amount" : 6000}`
 	b := bytes.NewBufferString(body)
 	request, _ := http.NewRequest(http.MethodPost, "/customers/3/account", b)
 
-	router.POST("/customers/:id/account", ah.newAccount)
+	router.POST("/customers/:id/account", app.newAccount)
 
 	recorder := httptest.NewRecorder()
 	router.ServeHTTP(recorder, request)
@@ -114,111 +138,46 @@ func TestAccountHandler_NewAccount_BadRequest(t *testing.T) {
 	}
 }
 
-func TestAccountHandler_GetAccount_Success(t *testing.T) {
-	//Arrange
-	//set body
-	setUpAccount(t)
-
-	expectedAccount := domain.Account{
-		AccountId:    1,
-		CustomerId:   3,
-		OpeningDate:  "2021-10-08 14:48:40",
-		AccountType:  "saving",
-		Amount:       6000,
-		Status:       "1",
-		Transactions: nil,
-	}
-
-	response := `{"account_id":1,"customer_id":3,"opening_date":"2021-10-08 14:48:40","account_type":"saving","amount":6000,"status":"1","transactions":null}`
-	router.GET("/customers/:id/account/:account_id", ah.getAccount)
-
-	request, _ := http.NewRequest(http.MethodGet, "/customers/3/account/1", nil)
-	mockAccount.EXPECT().GetAccount(uint(1)).Return(&expectedAccount, nil)
-
-	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, request)
-
-	//assert
-	if got := recorder.Body.String(); !reflect.DeepEqual(got, response) {
-		t.Errorf("Failed test while get account, \nexpected: %v\ngot: %v", got, response)
-
-	}
-}
-
-func TestAccountHandler_GetAccount_FailedGet(t *testing.T) {
-	//Arrange
-	setUpAccount(t)
-
-	router.GET("/customers/:id/account/:account_id", ah.getAccount)
-
-	request, _ := http.NewRequest(http.MethodGet, "/customers/3/account/1", nil)
-	mockAccount.EXPECT().GetAccount(uint(1)).Return(nil, errs.NewNotFoundError("Account not found"))
-
-	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, request)
-
-	//assert
-	if got := recorder.Code; !reflect.DeepEqual(got, http.StatusNotFound) {
-		t.Errorf("Failed test while get account, \nexpected: %v\ngot: %v", got, http.StatusNotFound)
-	}
-}
-
-func TestAccountHandler_GetAccount_BadRequest(t *testing.T) {
-	//Arrange
-	setUpAccount(t)
-
-	response := `strconv.ParseUint: parsing "a": invalid syntax`
-	router.GET("/customers/:id/account/:account_id", ah.getAccount)
-
-	request, _ := http.NewRequest(http.MethodGet, "/customers/3/account/a", nil)
-	//fmt.Println("err: ",err)
-
-	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, request)
-
-	//assert
-	if got := recorder.Body.String(); !reflect.DeepEqual(got, response) {
-		t.Errorf("Failed test while get account, \nexpected: %v\ngot: %v", got, response)
-
-	}
-}
-
 func TestAccountHandler_makeTransaction_Success(t *testing.T) {
 	// Arrange
-	setUpAccount(t)
+	setUp(t)
 
-	router.POST("/customers/:id/account/:account_id", ah.makeTransaction)
+	router.POST("/api/admin/withdrawal", app.makeTransaction)
 
 	body := `{
-    "transaction_type":"deposit",
-    "amount" : 6000
+	"customer_id":1,
+	"account_id":1,
+	"target_account_id":1,
+	"transaction_type":"deposit",
+	"amount" : 6000
 }`
 	b := bytes.NewBufferString(body)
 
-	req := dto2.TransactionRequest{
+	req := dto.TransactionRequest{
 		AccountId:       1,
 		Amount:          6000,
 		TransactionType: "deposit",
 		TransactionDate: "",
-		CustomerId:      "3",
+		CustomerId:      1,
+		TargetAccountId: 1,
 	}
 
-	res := dto2.TransactionResponse{
+	res := dto.TransactionResponse{
 		TransactionId:   1,
 		AccountId:       1,
-		Amount:          7000,
+		NewBalance:      7000,
 		TransactionType: "deposit",
 		TransactionDate: "",
 	}
 	mockAccount.EXPECT().MakeTransaction(req).Return(&res, nil)
 
 	// Act
-	request, _ := http.NewRequest(http.MethodPost, "/customers/3/account/1", b)
+	request, _ := http.NewRequest(http.MethodPost, "/api/admin/withdrawal", b)
 	recorder := httptest.NewRecorder()
 	router.ServeHTTP(recorder, request)
 
 	// Assert
-	exp := `{"transaction_id":1,"account_id":1,"new_balance":7000,"transaction_type":"deposit","transaction_date":""}`
+	exp := `{"error":false,"message":""}`
 	if got := recorder.Body.String(); !reflect.DeepEqual(got, exp) {
 		t.Errorf("Failed test while get account, \nexpected: %v\ngot: %v", got, exp)
 	}
@@ -226,33 +185,36 @@ func TestAccountHandler_makeTransaction_Success(t *testing.T) {
 
 func TestAccountHandler_makeTransaction_BadRequest(t *testing.T) {
 	// Arrange
-	setUpAccount(t)
+	setUp(t)
 
-	router.POST("/customers/:id/account/:account_id", ah.makeTransaction)
+	router.POST("/api/admin/withdrawal", app.makeTransaction)
 
 	body := `{
-    "transaction_type":"dep",
-    "amount" : 6000
+	"customer_id":1,
+	"account_id":1,
+	"target_account_id":1,
+	"transaction_type":"dep",
+	"amount" : 6000
 }`
 	b := bytes.NewBufferString(body)
 
-	req := dto2.TransactionRequest{
+	req := dto.TransactionRequest{
 		AccountId:       1,
 		Amount:          6000,
 		TransactionType: "dep",
-		TransactionDate: "",
-		CustomerId:      "3",
+		CustomerId:      1,
+		TargetAccountId: 1,
 	}
 
 	mockAccount.EXPECT().MakeTransaction(req).Return(nil, errs.NewValidationError("transaction type can only be deposit or withdrawal"))
 
 	// Act
-	request, _ := http.NewRequest(http.MethodPost, "/customers/3/account/1", b)
+	request, _ := http.NewRequest(http.MethodPost, "/api/admin/withdrawal", b)
 	recorder := httptest.NewRecorder()
 	router.ServeHTTP(recorder, request)
 
 	// Assert
-	exp := `{"Message":"transaction type can only be deposit or withdrawal"}`
+	exp := `{"error":true,"message":"transaction type can only be deposit or withdrawal"}`
 	if got := recorder.Body.String(); !reflect.DeepEqual(got, exp) {
 		t.Errorf("Failed test while get account, \nexpected: %v\ngot: %v", got, exp)
 	}

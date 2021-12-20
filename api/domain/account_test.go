@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"red/cmd/api/dto"
+	"red/dto"
 	"reflect"
 	"testing"
 )
@@ -32,6 +32,31 @@ func TestAccount_CanWithdraw(t *testing.T) {
 	}
 }
 
+func TestAccount_Inactive(t *testing.T) {
+	type fields struct {
+		Status string
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{"Success", fields{"1"}, true},
+		{"failed", fields{"0"}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := Account{
+				Status: tt.fields.Status,
+			}
+			if got := a.InactiveAccount(); got != tt.want {
+				t.Errorf("InactiveAccount() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestAccount_ToNewAccountResponseDto(t *testing.T) {
 	type fields struct {
 		AccountId    uint
@@ -55,13 +80,12 @@ func TestAccount_ToNewAccountResponseDto(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := Account{
-				AccountId:    tt.fields.AccountId,
-				CustomerId:   tt.fields.CustomerId,
-				OpeningDate:  tt.fields.OpeningDate,
-				AccountType:  tt.fields.AccountType,
-				Amount:       tt.fields.Amount,
-				Status:       tt.fields.Status,
-				Transactions: tt.fields.Transactions,
+				AccountId:   tt.fields.AccountId,
+				CustomerId:  tt.fields.CustomerId,
+				OpeningDate: tt.fields.OpeningDate,
+				AccountType: tt.fields.AccountType,
+				Amount:      tt.fields.Amount,
+				Status:      tt.fields.Status,
 			}
 			if got := a.ToNewAccountResponseDto(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ToNewAccountResponseDto() = %v, want %v", got, tt.want)

@@ -10,7 +10,7 @@ import (
 
 //go:generate mockgen -destination=../mocks/service/mockCustomerService.go -package=service red/service CustomerService
 type CustomerService interface {
-	GetAllCustomer(int) ([]dto.CustomerResponse, *errs.AppError)
+	GetAllCustomers(int) ([]dto.CustomerResponse, *errs.AppError)
 	GetCustomer(string) (*dto.CustomerResponse, *errs.AppError)
 	SaveCustomer(userID int, req dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError)
 	NewCustomer(dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError)
@@ -25,8 +25,8 @@ func NewCustomerService(repository domain.CustomerRepository) DefaultCustomerSer
 	return DefaultCustomerService{repository}
 }
 
-// GetAllCustomer 找尋所有顧客的資料
-func (s DefaultCustomerService) GetAllCustomer(userID int) ([]dto.CustomerResponse, *errs.AppError) {
+// GetAllCustomers 找尋所有顧客的資料
+func (s DefaultCustomerService) GetAllCustomers(userID int) ([]dto.CustomerResponse, *errs.AppError) {
 	// 轉換req裡的資料
 	//status = transformStatus(status)
 
@@ -44,17 +44,6 @@ func (s DefaultCustomerService) GetAllCustomer(userID int) ([]dto.CustomerRespon
 	return response, nil
 }
 
-func transformStatus(status string) string {
-	if status == "active" {
-		status = "1"
-	} else if status == "inactive" {
-		status = "0"
-	} else {
-		status = ""
-	}
-	return status
-}
-
 // GetCustomer 找尋特定id的顧客資料
 func (s DefaultCustomerService) GetCustomer(id string) (*dto.CustomerResponse, *errs.AppError) {
 	c, err := s.repo.ByID(id)
@@ -70,10 +59,9 @@ func (s DefaultCustomerService) GetCustomer(id string) (*dto.CustomerResponse, *
 // SaveCustomer 存入顧客資料
 func (s DefaultCustomerService) SaveCustomer(userID int, req dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError) {
 	customer := domain.Customer{
-		UserID: uint(userID),
-		Name:   req.Name,
-		City:   req.City,
-		//Zipcode:     req.Zipcode,
+		UserID:      uint(userID),
+		Name:        req.Name,
+		City:        req.City,
 		DateOfBirth: req.DateOfBirth,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
@@ -96,9 +84,8 @@ func (s DefaultCustomerService) SaveCustomer(userID int, req dto.CustomerRequest
 func (s DefaultCustomerService) NewCustomer(req dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError) {
 	customer := domain.Customer{
 		//Id:          uint(req.Id),
-		Name: req.Name,
-		City: req.City,
-		//Zipcode:     req.Zipcode,
+		Name:        req.Name,
+		City:        req.City,
 		DateOfBirth: req.DateOfBirth,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),

@@ -2,9 +2,9 @@ package service
 
 import (
 	"github.com/golang/mock/gomock"
-	domain3 "red/cmd/api/domain"
-	dto2 "red/cmd/api/dto"
-	"red/cmd/api/errs"
+	"red/domain"
+	"red/dto"
+	"red/errs"
 	domain2 "red/mocks/domain"
 	"reflect"
 	"testing"
@@ -13,7 +13,7 @@ import (
 
 func TestNewAccount_Validate_Failed(t *testing.T) {
 	//Arrange
-	request := dto2.AccountRequest{
+	request := dto.AccountRequest{
 		CustomerId:  2,
 		AccountType: "saving",
 		Amount:      0,
@@ -34,16 +34,16 @@ func TestNewAccount_Create_Fail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := domain2.NewMockAccountRepository(ctrl)
 	service := NewAccountService(mockRepo)
-	req := dto2.AccountRequest{
+	req := dto.AccountRequest{
 		CustomerId:  2,
 		AccountType: "saving",
 		Amount:      6000,
 	}
-	account := domain3.Account{
-		CustomerId:  req.CustomerId,
+	account := domain.Account{
+		CustomerId:  uint(req.CustomerId),
 		OpeningDate: time.Now().Format(dbTSLayout),
 		AccountType: req.AccountType,
-		Amount:      req.Amount,
+		Amount:      float64(req.Amount),
 		Status:      "1",
 	}
 	mockRepo.EXPECT().Save(account).Return(nil, errs.NewUnexpectedError("Unexpected database error"))
@@ -61,16 +61,16 @@ func TestNewAccount_Create_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := domain2.NewMockAccountRepository(ctrl)
 	service := NewAccountService(mockRepo)
-	req := dto2.AccountRequest{
+	req := dto.AccountRequest{
 		CustomerId:  2,
 		AccountType: "saving",
 		Amount:      6000,
 	}
-	account := domain3.Account{
-		CustomerId:  req.CustomerId,
+	account := domain.Account{
+		CustomerId:  uint(req.CustomerId),
 		OpeningDate: time.Now().Format(dbTSLayout),
 		AccountType: req.AccountType,
-		Amount:      req.Amount,
+		Amount:      float64(req.Amount),
 		Status:      "1",
 	}
 	accountWithId := account
@@ -93,22 +93,29 @@ func TestGetAccount_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := domain2.NewMockAccountRepository(ctrl)
 	service := NewAccountService(mockRepo)
-	account := &domain3.Account{
+	account := &domain.Account{
 		AccountId:   1,
-		CustomerId:  201,
-		OpeningDate: "",
+		CustomerId:  1,
 		AccountType: "",
 		Amount:      6000,
 		Status:      "",
 	}
-	mockRepo.EXPECT().FindBy(uint(1)).Return(account, nil)
+
+	dtoAccount := &dto.AccountResponse{
+		AccountId:   1,
+		CustomerId:  1,
+		AccountType: "",
+		Amount:      6000,
+		Status:      "",
+	}
+	mockRepo.EXPECT().ByID(uint(1)).Return(account, nil)
 	//Act
-	newAccount, appError := service.GetAccount(1)
+	newAccount, appError := service.GetAccount(1, 1)
 	//Assert
 	if appError != nil {
 		t.Error("Test failed while validating error for get account with id")
 	}
-	if newAccount != account {
+	if reflect.DeepEqual(dtoAccount, newAccount) {
 		t.Error("Test failed while get account with id")
 	}
 }
@@ -119,19 +126,18 @@ func TestGetAccount_Failed(t *testing.T) {
 	mockRepo := domain2.NewMockAccountRepository(ctrl)
 	service := NewAccountService(mockRepo)
 
-	mockRepo.EXPECT().FindBy(uint(1)).Return(nil, errs.NewNotFoundError("Account not found"))
+	mockRepo.EXPECT().ByID(uint(1)).Return(nil, errs.NewNotFoundError("Account not found"))
 	//Act
-	_, appError := service.GetAccount(1)
+	_, appError := service.GetAccount(1, 1)
 	//Assert
 	if appError == nil {
 		t.Error("Test failed while validating error for get account with id")
 	}
-
 }
 
 func TestMakeTransaction_Validate_Failed(t *testing.T) {
 	//Arrange
-	request := dto2.TransactionRequest{
+	request := dto.TransactionRequest{
 		AccountId:       1,
 		Amount:          6000,
 		TransactionType: "d",
@@ -153,46 +159,48 @@ func TestMakeTransaction_DepositSuccess(t *testing.T) {
 	mockRepo := domain2.NewMockAccountRepository(ctrl)
 	service := NewAccountService(mockRepo)
 
-	account := domain3.Account{
+	account := domain.Account{
 		AccountId:   1,
 		CustomerId:  1,
-		OpeningDate: "",
 		AccountType: "saving",
 		Amount:      6000,
 		Status:      "1",
 	}
 
-	req := dto2.TransactionRequest{
+	req := dto.TransactionRequest{
 		AccountId:       1,
 		Amount:          7000,
 		TransactionType: "deposit",
 	}
-	mockRepo.EXPECT().FindBy(req.AccountId).Return(&account, nil)
+	mockRepo.EXPECT().ByID(uint(req.AccountId)).Return(&account, nil)
 
-	transaction := domain3.Transaction{
-		AccountId:       req.AccountId,
-		Amount:          req.Amount,
+	transaction := domain.Transaction{
+		AccountId:       uint(req.AccountId),
+		Amount:          float64(req.Amount),
+		NewBalance:      account.Amount,
 		TransactionType: req.TransactionType,
 		TransactionDate: time.Now().Format(dbTSLayout),
 	}
 
-	returnTransaction := &domain3.Transaction{
+	returnTransaction := &domain.Transaction{
 		TransactionId:   1,
-		AccountId:       req.AccountId,
-		Amount:          13000,
-		TransactionType: req.TransactionType,
-		TransactionDate: time.Now().Format(dbTSLayout),
-	}
-
-	want := &dto2.TransactionResponse{
-		TransactionId:   1,
-		AccountId:       req.AccountId,
-		Amount:          13000,
+		AccountId:       uint(req.AccountId),
+		Amount:          6000,
+		NewBalance:      13000,
 		TransactionType: req.TransactionType,
 		TransactionDate: time.Now().Format(dbTSLayout),
 	}
 
 	mockRepo.EXPECT().SaveTransaction(transaction).Return(returnTransaction, nil)
+
+	want := &dto.TransactionResponse{
+		TransactionId:     1,
+		TransactionAmount: 6000,
+		NewBalance:        13000,
+		TransactionType:   req.TransactionType,
+		TransactionDate:   time.Now().Format(dbTSLayout),
+	}
+
 	//mockRepo.SaveTransaction(transaction)
 	//Act
 	got, appError := service.MakeTransaction(req)
@@ -212,25 +220,25 @@ func TestMakeTransaction_SaveFailed(t *testing.T) {
 	mockRepo := domain2.NewMockAccountRepository(ctrl)
 	service := NewAccountService(mockRepo)
 
-	account := domain3.Account{
+	account := domain.Account{
 		AccountId:   1,
 		CustomerId:  1,
-		OpeningDate: "",
 		AccountType: "saving",
 		Amount:      6000,
 		Status:      "1",
 	}
 
-	req := dto2.TransactionRequest{
+	req := dto.TransactionRequest{
 		AccountId:       1,
 		Amount:          7000,
 		TransactionType: "deposit",
 	}
-	mockRepo.EXPECT().FindBy(req.AccountId).Return(&account, nil)
+	mockRepo.EXPECT().ByID(uint(req.AccountId)).Return(&account, nil)
 
-	transaction := domain3.Transaction{
-		AccountId:       req.AccountId,
-		Amount:          req.Amount,
+	transaction := domain.Transaction{
+		AccountId:       uint(req.AccountId),
+		Amount:          float64(req.Amount),
+		NewBalance:      account.Amount,
 		TransactionType: req.TransactionType,
 		TransactionDate: time.Now().Format(dbTSLayout),
 	}
@@ -251,47 +259,48 @@ func TestMakeTransaction_WithdrawalSuccess(t *testing.T) {
 	mockRepo := domain2.NewMockAccountRepository(ctrl)
 	service := NewAccountService(mockRepo)
 
-	account := domain3.Account{
+	account := domain.Account{
 		AccountId:   1,
 		CustomerId:  1,
-		OpeningDate: "",
 		AccountType: "saving",
-		Amount:      16000,
+		Amount:      6000,
 		Status:      "1",
 	}
 
-	req := dto2.TransactionRequest{
+	req := dto.TransactionRequest{
 		AccountId:       1,
-		Amount:          7000,
+		Amount:          2000,
 		TransactionType: "withdrawal",
 	}
-	mockRepo.EXPECT().FindBy(req.AccountId).Return(&account, nil)
+	mockRepo.EXPECT().ByID(uint(req.AccountId)).Return(&account, nil)
 
-	transaction := domain3.Transaction{
-		AccountId:       req.AccountId,
-		Amount:          req.Amount,
+	transaction := domain.Transaction{
+		AccountId:       uint(req.AccountId),
+		Amount:          float64(req.Amount),
+		NewBalance:      account.Amount,
 		TransactionType: req.TransactionType,
 		TransactionDate: time.Now().Format(dbTSLayout),
 	}
 
-	returnTransaction := &domain3.Transaction{
+	returnTransaction := &domain.Transaction{
 		TransactionId:   1,
-		AccountId:       req.AccountId,
-		Amount:          9000,
-		TransactionType: req.TransactionType,
-		TransactionDate: time.Now().Format(dbTSLayout),
-	}
-
-	want := &dto2.TransactionResponse{
-		TransactionId:   1,
-		AccountId:       req.AccountId,
-		Amount:          9000,
+		AccountId:       uint(req.AccountId),
+		Amount:          2000,
+		NewBalance:      4000,
 		TransactionType: req.TransactionType,
 		TransactionDate: time.Now().Format(dbTSLayout),
 	}
 
 	mockRepo.EXPECT().SaveTransaction(transaction).Return(returnTransaction, nil)
-	//mockRepo.SaveTransaction(transaction)
+
+	want := &dto.TransactionResponse{
+		TransactionId:     1,
+		TransactionAmount: 2000,
+		NewBalance:        4000,
+		TransactionType:   req.TransactionType,
+		TransactionDate:   time.Now().Format(dbTSLayout),
+	}
+
 	//Act
 	got, appError := service.MakeTransaction(req)
 	//Assert
@@ -310,21 +319,20 @@ func TestMakeTransaction_WithdrawalFailed(t *testing.T) {
 	mockRepo := domain2.NewMockAccountRepository(ctrl)
 	service := NewAccountService(mockRepo)
 
-	account := domain3.Account{
+	account := domain.Account{
 		AccountId:   1,
 		CustomerId:  1,
-		OpeningDate: "",
 		AccountType: "saving",
-		Amount:      16000,
+		Amount:      6000,
 		Status:      "1",
 	}
 
-	req := dto2.TransactionRequest{
+	req := dto.TransactionRequest{
 		AccountId:       1,
-		Amount:          17000,
+		Amount:          7000,
 		TransactionType: "withdrawal",
 	}
-	mockRepo.EXPECT().FindBy(req.AccountId).Return(&account, nil)
+	mockRepo.EXPECT().ByID(uint(req.AccountId)).Return(&account, nil)
 
 	//Act
 	_, err := service.MakeTransaction(req)

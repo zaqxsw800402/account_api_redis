@@ -124,13 +124,11 @@ func (app *application) getAllTransactions(c *gin.Context) {
 	// 轉換accountId資料格式
 	id, err := strconv.ParseUint(accountId, 10, 64)
 	if err != nil {
-		//c.JSON(http.StatusBadRequest, err.Error())
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 	cId, err := strconv.ParseUint(customerId, 10, 64)
 	if err != nil {
-		//c.String(http.StatusBadRequest, err.Error())
 		badRequest(c, http.StatusBadRequest, err)
 		return
 	}
@@ -145,8 +143,6 @@ func (app *application) getAllTransactions(c *gin.Context) {
 		c.JSON(http.StatusOK, transactions)
 	}
 
-	// 將資料存進Redis
-	//h.redis.SaveAccount(account)
 }
 
 // getAllAccounts 讀取帳戶資料
@@ -182,7 +178,7 @@ func (app *application) getAllAccountWithUserID(c *gin.Context) {
 		return
 	}
 
-	customers, appError := app.ch.service.GetAllCustomer(userID)
+	customers, appError := app.ch.service.GetAllCustomers(userID)
 	if appError != nil {
 		c.JSON(appError.Code, appError.AsMessage())
 		return

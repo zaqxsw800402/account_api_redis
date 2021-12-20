@@ -41,7 +41,7 @@ func (app *application) invalidCredentials(c *gin.Context) {
 }
 
 func (app *application) checkCustomerInUser(userID int, customerID int) bool {
-	customers, err := app.ch.service.GetAllCustomer(userID)
+	customers, err := app.ch.service.GetAllCustomers(userID)
 	if err != nil {
 		return false
 	}

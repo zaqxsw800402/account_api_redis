@@ -5,8 +5,8 @@
 package service
 
 import (
-	"red/cmd/api/dto"
-	"red/cmd/api/errs"
+	dto "red/dto"
+	errs "red/errs"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -35,19 +35,33 @@ func (m *MockCustomerService) EXPECT() *MockCustomerServiceMockRecorder {
 	return m.recorder
 }
 
-// GetAllCustomer mocks base method.
-func (m *MockCustomerService) GetAllCustomer(arg0 string) ([]dto.CustomerResponse, *errs.AppError) {
+// DeleteCustomer mocks base method.
+func (m *MockCustomerService) DeleteCustomer(arg0 string) *errs.AppError {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllCustomer", arg0)
+	ret := m.ctrl.Call(m, "DeleteCustomer", arg0)
+	ret0, _ := ret[0].(*errs.AppError)
+	return ret0
+}
+
+// DeleteCustomer indicates an expected call of DeleteCustomer.
+func (mr *MockCustomerServiceMockRecorder) DeleteCustomer(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCustomer", reflect.TypeOf((*MockCustomerService)(nil).DeleteCustomer), arg0)
+}
+
+// GetAllCustomers mocks base method.
+func (m *MockCustomerService) GetAllCustomers(arg0 int) ([]dto.CustomerResponse, *errs.AppError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllCustomers", arg0)
 	ret0, _ := ret[0].([]dto.CustomerResponse)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
 }
 
-// GetAllCustomer indicates an expected call of GetAllCustomer.
-func (mr *MockCustomerServiceMockRecorder) GetAllCustomer(arg0 interface{}) *gomock.Call {
+// GetAllCustomers indicates an expected call of GetAllCustomers.
+func (mr *MockCustomerServiceMockRecorder) GetAllCustomers(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllCustomer", reflect.TypeOf((*MockCustomerService)(nil).GetAllCustomer), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllCustomers", reflect.TypeOf((*MockCustomerService)(nil).GetAllCustomers), arg0)
 }
 
 // GetCustomer mocks base method.
@@ -65,17 +79,32 @@ func (mr *MockCustomerServiceMockRecorder) GetCustomer(arg0 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomer", reflect.TypeOf((*MockCustomerService)(nil).GetCustomer), arg0)
 }
 
-// SaveCustomer mocks base method.
-func (m *MockCustomerService) SaveCustomer(arg0 dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError) {
+// NewCustomer mocks base method.
+func (m *MockCustomerService) NewCustomer(arg0 dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveCustomer", arg0)
+	ret := m.ctrl.Call(m, "NewCustomer", arg0)
+	ret0, _ := ret[0].(*dto.CustomerResponse)
+	ret1, _ := ret[1].(*errs.AppError)
+	return ret0, ret1
+}
+
+// NewCustomer indicates an expected call of NewCustomer.
+func (mr *MockCustomerServiceMockRecorder) NewCustomer(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewCustomer", reflect.TypeOf((*MockCustomerService)(nil).NewCustomer), arg0)
+}
+
+// SaveCustomer mocks base method.
+func (m *MockCustomerService) SaveCustomer(arg0 int, arg1 dto.CustomerRequest) (*dto.CustomerResponse, *errs.AppError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveCustomer", arg0, arg1)
 	ret0, _ := ret[0].(*dto.CustomerResponse)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
 }
 
 // SaveCustomer indicates an expected call of SaveCustomer.
-func (mr *MockCustomerServiceMockRecorder) SaveCustomer(arg0 interface{}) *gomock.Call {
+func (mr *MockCustomerServiceMockRecorder) SaveCustomer(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveCustomer", reflect.TypeOf((*MockCustomerService)(nil).SaveCustomer), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveCustomer", reflect.TypeOf((*MockCustomerService)(nil).SaveCustomer), arg0, arg1)
 }

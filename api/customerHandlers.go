@@ -21,7 +21,7 @@ func (app *application) getAllCustomers(c *gin.Context) {
 		return
 	}
 
-	customers, err2 := app.ch.service.GetAllCustomer(userID)
+	customers, err2 := app.ch.service.GetAllCustomers(userID)
 	if err2 != nil {
 		badRequest(c, err2.Code, err2)
 	}
@@ -35,12 +35,6 @@ func (app *application) getAllCustomers(c *gin.Context) {
 func (app *application) getCustomer(c *gin.Context) {
 	id := c.Param("id")
 
-	//if customer := app.ch.redis.GetCustomer(id); customer != nil {
-	//	c.JSON(http.StatusOK, customer)
-	//	fmt.Println("Using redis")
-	//	return
-	//}
-
 	customer, appError := app.ch.service.GetCustomer(id)
 	if appError != nil {
 		c.JSON(appError.Code, appError.AsMessage())
@@ -48,9 +42,6 @@ func (app *application) getCustomer(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, customer)
 	}
-
-	//app.ch.redis.SaveCustomer(customer)
-
 }
 
 func (app *application) newCustomer(c *gin.Context) {

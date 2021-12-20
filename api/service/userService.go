@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"red/domain"
 	"red/dto"
 	"red/errs"
@@ -133,7 +132,9 @@ func (s DefaultUserService) SaveToken(userRequest dto.UserRequest) (*dto.TokenRe
 
 func (s DefaultUserService) GetUserWithToken(token string) (*domain.Token, *errs.AppError) {
 	t, err := s.repo.GetUserWithToken(token)
-	fmt.Println(t)
+	if err != nil {
+		return nil, err
+	}
 	//response := user.ToDto()
-	return nil, err
+	return t, nil
 }

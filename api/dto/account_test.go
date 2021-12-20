@@ -1,16 +1,16 @@
 package dto
 
 import (
-	"red/cmd/api/errs"
+	"red/errs"
 	"reflect"
 	"testing"
 )
 
 func TestNewAccountRequest_Validate(t *testing.T) {
 	type fields struct {
-		CustomerId  uint
+		CustomerId  int64
 		AccountType string
-		Amount      float64
+		Amount      int64
 	}
 	tests := []struct {
 		name   string

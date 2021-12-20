@@ -5,8 +5,8 @@
 package domain
 
 import (
-	"red/cmd/api/domain"
-	"red/cmd/api/errs"
+	domain "red/domain"
+	errs "red/errs"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -35,7 +35,7 @@ func (m *MockCustomerRepository) EXPECT() *MockCustomerRepositoryMockRecorder {
 	return m.recorder
 }
 
-// ById mocks base method.
+// ByID mocks base method.
 func (m *MockCustomerRepository) ByID(arg0 string) (*domain.Customer, *errs.AppError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ByID", arg0)
@@ -44,14 +44,28 @@ func (m *MockCustomerRepository) ByID(arg0 string) (*domain.Customer, *errs.AppE
 	return ret0, ret1
 }
 
-// ById indicates an expected call of ById.
-func (mr *MockCustomerRepositoryMockRecorder) ById(arg0 interface{}) *gomock.Call {
+// ByID indicates an expected call of ByID.
+func (mr *MockCustomerRepositoryMockRecorder) ByID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ByID", reflect.TypeOf((*MockCustomerRepository)(nil).ByID), arg0)
 }
 
+// Delete mocks base method.
+func (m *MockCustomerRepository) Delete(arg0 string) *errs.AppError {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", arg0)
+	ret0, _ := ret[0].(*errs.AppError)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockCustomerRepositoryMockRecorder) Delete(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCustomerRepository)(nil).Delete), arg0)
+}
+
 // FindAll mocks base method.
-func (m *MockCustomerRepository) FindAll(arg0 string) ([]domain.Customer, *errs.AppError) {
+func (m *MockCustomerRepository) FindAll(arg0 int) ([]domain.Customer, *errs.AppError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindAll", arg0)
 	ret0, _ := ret[0].([]domain.Customer)
@@ -68,7 +82,7 @@ func (mr *MockCustomerRepositoryMockRecorder) FindAll(arg0 interface{}) *gomock.
 // Save mocks base method.
 func (m *MockCustomerRepository) Save(arg0 domain.Customer) (*domain.Customer, *errs.AppError) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveUser", arg0)
+	ret := m.ctrl.Call(m, "Save", arg0)
 	ret0, _ := ret[0].(*domain.Customer)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
@@ -77,5 +91,20 @@ func (m *MockCustomerRepository) Save(arg0 domain.Customer) (*domain.Customer, *
 // Save indicates an expected call of Save.
 func (mr *MockCustomerRepositoryMockRecorder) Save(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUser", reflect.TypeOf((*MockCustomerRepository)(nil).Save), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockCustomerRepository)(nil).Save), arg0)
+}
+
+// Update mocks base method.
+func (m *MockCustomerRepository) Update(arg0 domain.Customer) (*domain.Customer, *errs.AppError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", arg0)
+	ret0, _ := ret[0].(*domain.Customer)
+	ret1, _ := ret[1].(*errs.AppError)
+	return ret0, ret1
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockCustomerRepositoryMockRecorder) Update(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockCustomerRepository)(nil).Update), arg0)
 }

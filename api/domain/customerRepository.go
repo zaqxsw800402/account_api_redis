@@ -33,7 +33,6 @@ func (d CustomerRepositoryDb) Update(c Customer) (*Customer, *errs.AppError) {
 	result := d.client.Model(&Customer{}).Updates(Customer{
 		Name:        c.Name,
 		City:        c.City,
-		Zipcode:     c.Zipcode,
 		DateOfBirth: c.DateOfBirth,
 	})
 	err := result.Error
@@ -45,7 +44,7 @@ func (d CustomerRepositoryDb) Update(c Customer) (*Customer, *errs.AppError) {
 	return &c, nil
 }
 
-// ById 找尋特定ID的顧客
+// ByID 找尋特定ID的顧客
 func (d CustomerRepositoryDb) ByID(id string) (*Customer, *errs.AppError) {
 	// 在customers的表格裡，先預載入account的資料，並讀取特定id的資料
 	var c Customer
@@ -85,14 +84,6 @@ func (d CustomerRepositoryDb) FindAll(userID int) ([]Customer, *errs.AppError) {
 }
 
 func (d CustomerRepositoryDb) Delete(id string) *errs.AppError {
-	//i, err := strconv.ParseUint(id, 10, 10)
-	//if err != nil {
-	//	return &errs.AppError{
-	//		Code:    http.StatusBadRequest,
-	//		Message: "could not convert customer id to int",
-	//	}
-	//}
-
 	deleteDate := time.Now()
 	result := d.client.Model(&Customer{}).Where("customer_id = ?", id).Updates(Customer{Status: "0", DeleteAt: &deleteDate})
 	if err := result.Error; err != nil {

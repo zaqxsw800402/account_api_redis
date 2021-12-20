@@ -8,14 +8,19 @@ services:
 script:
   #  - docker run -e CI=true USERNAME/react-test npm test
   - docker build -t ichih/bank-api ./api
-  - docker build -t ichih/bank-web ./web
-  - docker build -t ichih/bank-nginx ./nginx
-  - docker build -t ichih/bank-cronjob ./cronjob
+  - docker exec ichih/bank-api go test -run ./...
+
+#  - docker build -t ichih/bank-web ./web
+#  - docker build -t ichih/bank-nginx ./nginx
+#  - docker build -t ichih/bank-cronjob ./cronjob
 
 after_success:
   # login to docker cli
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
   # push to docker hub
+  - docker build -t ichih/bank-web ./web
+  - docker build -t ichih/bank-nginx ./nginx
+  - docker build -t ichih/bank-cronjob ./cronjob
 #  - docker push ichih/bank-api
 #  - docker push ichih/bank-web
 #  - docker push ichih/bank-cronjob

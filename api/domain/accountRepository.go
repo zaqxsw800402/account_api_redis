@@ -7,6 +7,14 @@ import (
 	"time"
 )
 
+var now func() time.Time
+
+func init() {
+	now = func() time.Time {
+		return time.Now()
+	}
+}
+
 type AccountRepositoryDB struct {
 	client *gorm.DB
 }
@@ -121,7 +129,8 @@ func (d AccountRepositoryDB) SaveTransaction(t Transaction) (*Transaction, *errs
 	}
 
 	//result := tx.Table("accounts").Where("account_id", t.AccountId).Update("amount", t.NewBalance)
-	result := tx.Model(&Account{}).Where("account_id", t.AccountId).Updates(Account{Amount: t.NewBalance, UpdatedAt: time.Now()})
+	result := tx.Model(&Account{}).Where("account_id", t.AccountId).
+		Updates(Account{Amount: t.NewBalance})
 	if err := result.Error; err != nil {
 		tx.Rollback()
 		//logger.Error("Error while update account amount" + err.Error())

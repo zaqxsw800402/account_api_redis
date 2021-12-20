@@ -84,7 +84,7 @@ func (app *application) authenticateToken(c *gin.Context) (*int, *errs.AppError)
 	//}
 
 	switch {
-	case err2 == redis.Nil:
+	case err2 == redis.Nil || i == 0:
 		t, err := app.uh.service.GetUserWithToken(token)
 		if err != nil {
 			return nil, err

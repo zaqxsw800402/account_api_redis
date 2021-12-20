@@ -5,9 +5,8 @@
 package service
 
 import (
-	"red/cmd/api/domain"
-	dto2 "red/cmd/api/dto"
-	"red/cmd/api/errs"
+	dto "red/dto"
+	errs "red/errs"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -36,26 +35,70 @@ func (m *MockAccountService) EXPECT() *MockAccountServiceMockRecorder {
 	return m.recorder
 }
 
-// GetAccount mocks base method.
-func (m *MockAccountService) GetAccount(arg0 uint) (*domain.Account, *errs.AppError) {
+// DeleteAccount mocks base method.
+func (m *MockAccountService) DeleteAccount(arg0 string) *errs.AppError {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAccount", arg0)
-	ret0, _ := ret[0].(*domain.Account)
+	ret := m.ctrl.Call(m, "DeleteAccount", arg0)
+	ret0, _ := ret[0].(*errs.AppError)
+	return ret0
+}
+
+// DeleteAccount indicates an expected call of DeleteAccount.
+func (mr *MockAccountServiceMockRecorder) DeleteAccount(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAccount", reflect.TypeOf((*MockAccountService)(nil).DeleteAccount), arg0)
+}
+
+// GetALlTransactions mocks base method.
+func (m *MockAccountService) GetALlTransactions(arg0, arg1 uint) ([]dto.TransactionResponse, *errs.AppError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetALlTransactions", arg0, arg1)
+	ret0, _ := ret[0].([]dto.TransactionResponse)
+	ret1, _ := ret[1].(*errs.AppError)
+	return ret0, ret1
+}
+
+// GetALlTransactions indicates an expected call of GetALlTransactions.
+func (mr *MockAccountServiceMockRecorder) GetALlTransactions(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetALlTransactions", reflect.TypeOf((*MockAccountService)(nil).GetALlTransactions), arg0, arg1)
+}
+
+// GetAccount mocks base method.
+func (m *MockAccountService) GetAccount(arg0, arg1 uint) (*dto.AccountResponse, *errs.AppError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAccount", arg0, arg1)
+	ret0, _ := ret[0].(*dto.AccountResponse)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
 }
 
 // GetAccount indicates an expected call of GetAccount.
-func (mr *MockAccountServiceMockRecorder) GetAccount(arg0 interface{}) *gomock.Call {
+func (mr *MockAccountServiceMockRecorder) GetAccount(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccount", reflect.TypeOf((*MockAccountService)(nil).GetAccount), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccount", reflect.TypeOf((*MockAccountService)(nil).GetAccount), arg0, arg1)
+}
+
+// GetAllAccounts mocks base method.
+func (m *MockAccountService) GetAllAccounts(arg0 uint) ([]dto.AccountResponse, *errs.AppError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllAccounts", arg0)
+	ret0, _ := ret[0].([]dto.AccountResponse)
+	ret1, _ := ret[1].(*errs.AppError)
+	return ret0, ret1
+}
+
+// GetAllAccounts indicates an expected call of GetAllAccounts.
+func (mr *MockAccountServiceMockRecorder) GetAllAccounts(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllAccounts", reflect.TypeOf((*MockAccountService)(nil).GetAllAccounts), arg0)
 }
 
 // MakeTransaction mocks base method.
-func (m *MockAccountService) MakeTransaction(arg0 dto2.TransactionRequest) (*dto2.TransactionResponse, *errs.AppError) {
+func (m *MockAccountService) MakeTransaction(arg0 dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MakeTransaction", arg0)
-	ret0, _ := ret[0].(*dto2.TransactionResponse)
+	ret0, _ := ret[0].(*dto.TransactionResponse)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
 }
@@ -67,10 +110,10 @@ func (mr *MockAccountServiceMockRecorder) MakeTransaction(arg0 interface{}) *gom
 }
 
 // NewAccount mocks base method.
-func (m *MockAccountService) NewAccount(arg0 dto2.AccountRequest) (*dto2.AccountResponse, *errs.AppError) {
+func (m *MockAccountService) NewAccount(arg0 dto.AccountRequest) (*dto.AccountResponse, *errs.AppError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewAccount", arg0)
-	ret0, _ := ret[0].(*dto2.AccountResponse)
+	ret0, _ := ret[0].(*dto.AccountResponse)
 	ret1, _ := ret[1].(*errs.AppError)
 	return ret0, ret1
 }
@@ -79,4 +122,19 @@ func (m *MockAccountService) NewAccount(arg0 dto2.AccountRequest) (*dto2.Account
 func (mr *MockAccountServiceMockRecorder) NewAccount(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewAccount", reflect.TypeOf((*MockAccountService)(nil).NewAccount), arg0)
+}
+
+// Transfer mocks base method.
+func (m *MockAccountService) Transfer(arg0 dto.TransactionRequest) ([]dto.AccountResponse, *errs.AppError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Transfer", arg0)
+	ret0, _ := ret[0].([]dto.AccountResponse)
+	ret1, _ := ret[1].(*errs.AppError)
+	return ret0, ret1
+}
+
+// Transfer indicates an expected call of Transfer.
+func (mr *MockAccountServiceMockRecorder) Transfer(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Transfer", reflect.TypeOf((*MockAccountService)(nil).Transfer), arg0)
 }
