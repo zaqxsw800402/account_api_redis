@@ -2,17 +2,12 @@ sudo: required
 services:
   - docker
 
-#before_install:
-#  - docker build -t ichih/api-test -f ./api/Dockerfie.dev ./api
+before_install:
+  - docker build -t ichih/bank-api ./api
 
 script:
-  #  - docker run -e CI=true USERNAME/react-test npm test
-  - docker build -t ichih/bank-api ./api
   - docker run ichih/bank-api go test -run ./...
 
-#  - docker build -t ichih/bank-web ./web
-#  - docker build -t ichih/bank-nginx ./nginx
-#  - docker build -t ichih/bank-cronjob ./cronjob
 
 after_success:
   # login to docker cli

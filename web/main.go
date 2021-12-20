@@ -74,11 +74,11 @@ func main() {
 
 	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen on")
 	flag.StringVar(&cfg.env, "env", "development", "Application environment {development|production}")
-	flag.StringVar(&cfg.api, "api", "http://localhost:4001", "URL to api")
 	flag.StringVar(&cfg.frontend, "frontend", "http://localhost:4000", "url to frontend")
 
 	flag.Parse()
 
+	cfg.api = os.Getenv("API")
 	cfg.secretKey = os.Getenv("Secret")
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
