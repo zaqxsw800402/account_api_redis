@@ -8,6 +8,7 @@ services:
 script:
   #  - docker run -e CI=true USERNAME/react-test npm test
   - docker build -t ichih/bank-api ./api
+  - docker run ichih/bank-api
   - docker exec ichih/bank-api go test -run ./...
 
 #  - docker build -t ichih/bank-web ./web
