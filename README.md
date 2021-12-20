@@ -1,5 +1,5 @@
 # Bank
-歡迎試用[Bank](http://bank-env.eba-anpfsyzx.ap-northeast-1.elasticbeanstalk.com/) <BR>
+放在AWS上的示範網站[Bank](http://bank-env.eba-anpfsyzx.ap-northeast-1.elasticbeanstalk.com/) <BR>
 模擬能夠存錢、提錢、轉帳的網頁(僅限本網站) <br>
 
 ## 架構圖
