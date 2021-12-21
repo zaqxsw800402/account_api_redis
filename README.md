@@ -1,6 +1,10 @@
 # Bank
 放在AWS上的示範網站[Bank](http://bank-env.eba-anpfsyzx.ap-northeast-1.elasticbeanstalk.com/) <BR>
 模擬能夠存錢、提錢、轉帳的網頁(僅限本網站) <br>
+網站帳號密碼可以自行創建 <br>
+
+帳號: a@a.a <br>
+密碼: a <br>
 
 ## 架構圖
 ![image](https://github.com/zaqxsw800402/account_api_redis/blob/master/picture/bank.drawio.png?raw=true)
