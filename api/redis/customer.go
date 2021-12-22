@@ -59,7 +59,7 @@ func (d Database) SaveCustomer(ctx context.Context, userID int, c dto.CustomerRe
 	userValue := d.getUserValueForCustomer(strconv.Itoa(int(c.Id)))
 
 	d.RC.SAdd(ctx, userKey, userValue)
-	d.RC.Expire(ctx, userKey, time.Hour*24)
+	d.RC.Expire(ctx, userKey, time.Hour*1)
 
 	// 存進資料
 	d.RC.HSet(ctx, userValue,
@@ -69,7 +69,7 @@ func (d Database) SaveCustomer(ctx context.Context, userID int, c dto.CustomerRe
 		"DateOfBirth", c.DateOfBirth,
 		"Status", c.Status)
 	// 設定過期時間
-	d.RC.Expire(ctx, userValue, time.Hour*24)
+	d.RC.Expire(ctx, userValue, time.Hour*1)
 }
 
 func (d Database) SaveAllCustomers(ctx context.Context, userid int, customers []dto.CustomerResponse) {

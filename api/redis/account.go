@@ -61,17 +61,7 @@ func (d Database) GetAllAccounts(ctx context.Context, userID int) ([]dto.Account
 				Status:      account.Status,
 			})
 		}
-		//if err != nil {
-		//	return nil, err
-		//}
-		//
-		//accounts = append(accounts, dto.AccountResponse{
-		//	AccountId:   account.AccountId,
-		//	CustomerId:  account.CustomerId,
-		//	AccountType: account.AccountType,
-		//	Amount:      account.Amount,
-		//	Status:      account.Status,
-		//})
+
 	}
 	sort.SliceStable(accounts, func(i int, j int) bool {
 		return accounts[i].CustomerId < accounts[j].CustomerId
@@ -86,7 +76,7 @@ func (d Database) SaveAccount(ctx context.Context, userID int, a dto.AccountResp
 	userValue := d.getUserValueForAccount(strconv.Itoa(int(a.AccountId)))
 	// 製作專屬的key
 	d.RC.SAdd(ctx, userKey, userValue)
-	d.RC.Expire(ctx, userKey, time.Hour*24)
+	d.RC.Expire(ctx, userKey, time.Hour*1)
 
 	d.RC.HSet(ctx, userValue,
 		"AccountId", a.AccountId,
@@ -96,7 +86,7 @@ func (d Database) SaveAccount(ctx context.Context, userID int, a dto.AccountResp
 		"Status", a.Status,
 	)
 	// 設定過期時間
-	d.RC.Expire(ctx, userValue, time.Hour*24)
+	d.RC.Expire(ctx, userValue, time.Hour*1)
 }
 
 func (d Database) SaveAllAccounts(ctx context.Context, userID int, accounts []dto.AccountResponse) {
@@ -117,6 +107,6 @@ func (d Database) DeleteAccount(ctx context.Context, accountID string) error {
 func (d Database) UpdateAmount(ctx context.Context, accountID string, amount float64) {
 	userValue := d.getUserValueForAccount(accountID)
 	d.RC.HSet(ctx, userValue, "Amount", amount)
-	d.RC.Expire(ctx, userValue, time.Hour*24)
+	d.RC.Expire(ctx, userValue, time.Hour*1)
 
 }
