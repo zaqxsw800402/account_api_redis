@@ -90,7 +90,7 @@ services:
 
   nsqd:
     image: nsqio/nsq
-    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=nsqd
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160
 
     depends_on:
       - nsqlookupd
