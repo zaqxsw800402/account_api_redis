@@ -57,7 +57,8 @@ func main() {
 	//nsqHost := os.Getenv("NSQ_HOST")
 	//nsqHost := os.Getenv("NSQ_HOST")
 
-	err = consumer.ConnectToNSQLookupd("nsqd:4161")
+	//err = consumer.ConnectToNSQLookupd("nsqd:4161")
+	err = consumer.ConnectToNSQLookupd("nsqlookupd:4161")
 
 	//err = consumer.ConnectToNSQD(nsqHost)
 	if err != nil {
