@@ -103,16 +103,16 @@ func main() {
 	}
 	redisDB := redis.New(redisCli)
 
-	//nsqHost := os.Getenv("NSQ_HOST")
-	//nsqAddr := fmt.Sprintf("%s:4150", nsqHost)
-	//nsqConfig := nsq.NewConfig()
-	//producer, err := nsq.NewProducer(nsqAddr, nsqConfig)
-	//if err != nil {
-	//	log.Println("connection to nsq failed: " + err.Error())
-	//}
-	//defer producer.Stop()
-	//
-	//producer.Publish("mailer", []byte("start"))
+	nsqHost := os.Getenv("NSQ_HOST")
+	nsqAddr := fmt.Sprintf("%s:4150", nsqHost)
+	nsqConfig := nsq.NewConfig()
+	producer, err := nsq.NewProducer(nsqAddr, nsqConfig)
+	if err != nil {
+		log.Println("connection to nsq failed: " + err.Error())
+	}
+	defer producer.Stop()
+
+	producer.Publish("mailer", []byte("start"))
 
 	app := &application{
 		config:   cfg,
@@ -122,7 +122,7 @@ func main() {
 		ah:       ah,
 		uh:       uh,
 		redis:    redisDB,
-		//mail:     producer,
+		mail:     producer,
 	}
 
 	err = app.serve()

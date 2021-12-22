@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"golang.org/x/crypto/bcrypt"
@@ -127,23 +128,23 @@ func (app *application) newUser(c *gin.Context) {
 		badRequest(c, appError.Code, appError)
 		return
 	}
-	//
-	//var nsqMessage struct {
-	//	Op    string
-	//	Email string
-	//}
-	//
-	//nsqMessage.Op = "newUser"
-	//nsqMessage.Email = user.Email
-	//
-	//marshal, err := json.Marshal(nsqMessage)
-	//if err != nil {
-	//	log.Println(err)
-	//}
-	//err = app.mail.Publish("mailer", marshal)
-	//if err != nil {
-	//	log.Println(err)
-	//}
+
+	var nsqMessage struct {
+		Op    string
+		Email string
+	}
+
+	nsqMessage.Op = "newUser"
+	nsqMessage.Email = user.Email
+
+	marshal, err := json.Marshal(nsqMessage)
+	if err != nil {
+		log.Println(err)
+	}
+	err = app.mail.Publish("mailer", marshal)
+	if err != nil {
+		log.Println(err)
+	}
 
 	jsonResp(c, http.StatusOK)
 }
@@ -165,22 +166,22 @@ func (app *application) SendPasswordResetEmail(c *gin.Context) {
 		return
 	}
 
-	//var nsqMessage struct {
-	//	Op    string
-	//	Email string
-	//}
-	//
-	//nsqMessage.Op = "forgotPassword"
-	//nsqMessage.Email = payload.Email
-	//
-	//marshal, err := json.Marshal(nsqMessage)
-	//if err != nil {
-	//	log.Println(err)
-	//}
-	//err = app.mail.Publish("mailer", marshal)
-	//if err != nil {
-	//	log.Println(err)
-	//}
+	var nsqMessage struct {
+		Op    string
+		Email string
+	}
+
+	nsqMessage.Op = "forgotPassword"
+	nsqMessage.Email = payload.Email
+
+	marshal, err := json.Marshal(nsqMessage)
+	if err != nil {
+		log.Println(err)
+	}
+	err = app.mail.Publish("mailer", marshal)
+	if err != nil {
+		log.Println(err)
+	}
 
 	jsonResp(c, http.StatusCreated)
 }
