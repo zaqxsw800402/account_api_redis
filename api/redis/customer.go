@@ -58,8 +58,11 @@ func (d Database) SaveCustomer(ctx context.Context, userID int, c dto.CustomerRe
 	// add customer to user id
 	userValue := d.getUserValueForCustomer(strconv.Itoa(int(c.Id)))
 
+	result := d.RC.Exists(ctx, userKey)
 	d.RC.SAdd(ctx, userKey, userValue)
-	d.RC.Expire(ctx, userKey, time.Hour*1)
+	if result.Val() == 0 {
+		d.RC.Expire(ctx, userKey, time.Hour*1)
+	}
 
 	// 存進資料
 	d.RC.HSet(ctx, userValue,

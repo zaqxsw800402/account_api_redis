@@ -75,8 +75,11 @@ func (d Database) SaveAccount(ctx context.Context, userID int, a dto.AccountResp
 	userKey := d.getUserKeyForAccount(userID)
 	userValue := d.getUserValueForAccount(strconv.Itoa(int(a.AccountId)))
 	// 製作專屬的key
+	result := d.RC.Exists(ctx, userKey)
 	d.RC.SAdd(ctx, userKey, userValue)
-	d.RC.Expire(ctx, userKey, time.Hour*1)
+	if result.Val() == 0 {
+		d.RC.Expire(ctx, userKey, time.Hour*1)
+	}
 
 	d.RC.HSet(ctx, userValue,
 		"AccountId", a.AccountId,
@@ -106,7 +109,9 @@ func (d Database) DeleteAccount(ctx context.Context, accountID string) error {
 
 func (d Database) UpdateAmount(ctx context.Context, accountID string, amount float64) {
 	userValue := d.getUserValueForAccount(accountID)
-	d.RC.HSet(ctx, userValue, "Amount", amount)
-	d.RC.Expire(ctx, userValue, time.Hour*1)
+	result := d.RC.Exists(ctx, userValue)
+	if result.Val() == 1 {
+		d.RC.HSet(ctx, userValue, "Amount", amount)
+	}
 
 }

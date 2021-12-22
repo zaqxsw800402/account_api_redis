@@ -91,7 +91,7 @@ func (app *application) makeTransaction(c *gin.Context) {
 }
 
 func (app *application) transfer(c *gin.Context) {
-	userID := c.GetInt("userID")
+	//userID := c.GetInt("userID")
 
 	var request dto.TransactionRequest
 	err := c.ShouldBindJSON(&request)
@@ -108,7 +108,7 @@ func (app *application) transfer(c *gin.Context) {
 	}
 
 	for _, account := range accounts {
-		app.redis.SaveAccount(c, userID, account)
+		//app.redis.SaveAccount(c, userID, account)
 		app.redis.UpdateAmount(c, strconv.FormatInt(int64(account.AccountId), 10), account.Amount)
 	}
 

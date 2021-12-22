@@ -13,7 +13,7 @@ type User struct {
 	Id uint `redis:"user_id"`
 }
 
-func (d Database) SaveUserID(token string, userID int) {
+func (d Database) SaveUserID(ctx context.Context, token string, userID int) {
 	d.RC.Set(ctx, token, userID, time.Hour)
 }
 
