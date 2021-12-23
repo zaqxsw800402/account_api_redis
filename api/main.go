@@ -112,7 +112,10 @@ func main() {
 	}
 	defer producer.Stop()
 
-	producer.Publish("mailer", []byte("start"))
+	err = producer.Publish("mailer", []byte("start"))
+	if err != nil {
+		log.Println(err.Error())
+	}
 
 	app := &application{
 		config:   cfg,
