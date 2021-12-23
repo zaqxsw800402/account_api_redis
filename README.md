@@ -10,7 +10,7 @@
 ![image](https://github.com/zaqxsw800402/account_api_redis/blob/master/picture/bank.drawio.png?raw=true)
 
 ### api(backend)
-主要使用gin、gorm、redis
+主要使用gin、gorm、redis、mysql
 ### web(frontend)
 主要使用html、js
 ### cronjob
