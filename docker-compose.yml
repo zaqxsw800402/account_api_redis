@@ -51,7 +51,7 @@ services:
       - DB_PASSWORD=$DB_PASSWORD
       - DB_PORT=$DB_PORT
       - NSQ_HOST=$NSQ_HOST
-      - MONGODB_HOST=mongo
+      - MONGODB_HOST=$MONGODB_HOST
 
     restart: always
     hostname: backend
@@ -67,7 +67,7 @@ services:
       - DB_PASSWORD=$DB_PASSWORD
       - DB_PORT=$DB_PORT
       - API=$API
-      - MONGODB_HOST=mongo
+      - MONGODB_HOST=$MONGODB_HOST
 
     restart: always
     hostname: web

@@ -38,8 +38,8 @@ func formatCurrency(n int) string {
 var templateFS embed.FS
 
 func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
-	td.API = app.config.api
-	//td.API = ""
+	//td.API = app.config.api
+	td.API = ""
 
 	if app.Session.Exists(r.Context(), "userID") {
 		td.IsAuthenticated = 1
