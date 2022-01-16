@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"red/domain"
+	"red/mongo"
 	"red/redis"
 	"red/service"
 	"time"
@@ -32,6 +33,7 @@ type application struct {
 	ch       CustomerHandler
 	ah       AccountHandler
 	uh       UserHandlers
+	mongo    mongo.Collection
 	redis    redis.Database
 	mail     *nsq.Producer
 }
@@ -92,9 +94,16 @@ func main() {
 
 	//建立各個Handlers
 	//ch := CustomerHandler{service.NewCustomerService(customerRepositoryDb)}
-	ch := CustomerHandler{service: service.NewCustomerService(customerRepositoryDb)}
-	ah := AccountHandler{service: service.NewAccountService(accountRepositoryDb)}
-	uh := UserHandlers{service: service.NewUserService(userRepositoryDb)}
+	ch := CustomerHandler{service.NewCustomerService(customerRepositoryDb)}
+	ah := AccountHandler{service.NewAccountService(accountRepositoryDb)}
+	uh := UserHandlers{service.NewUserService(userRepositoryDb)}
+
+	// connect to mongodb
+	mongodbUser := os.Getenv("MONGODB_USER")
+	mongodbPassword := os.Getenv("MONGODB_PASSWORD")
+	mongodbHost := os.Getenv("MONGODB_HOST")
+
+	mongodb := mongo.New(mongodbHost, mongodbUser, mongodbPassword)
 
 	//建立redis
 	redisCli, err := redis.GetClient(redisHost)
@@ -125,6 +134,7 @@ func main() {
 		ah:       ah,
 		uh:       uh,
 		redis:    redisDB,
+		mongo:    mongodb,
 		mail:     producer,
 	}
 

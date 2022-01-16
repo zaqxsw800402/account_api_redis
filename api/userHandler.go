@@ -116,9 +116,14 @@ func (app *application) newUser(c *gin.Context) {
 		return
 	}
 
-	_, appError := app.uh.service.SaveUser(user, string(newHash))
+	u, appError := app.uh.service.SaveUser(user, string(newHash))
 	if appError != nil {
 		badRequest(c, appError.Code, appError)
+		return
+	}
+
+	err = app.mongo.SaveProfile(u.ID, user)
+	if err != nil {
 		return
 	}
 
@@ -137,6 +142,24 @@ func (app *application) newUser(c *gin.Context) {
 	err = app.mail.Publish("mailer", marshal)
 	if err != nil {
 		log.Println(err)
+	}
+
+	jsonResp(c, http.StatusOK)
+}
+
+func (app *application) updateProfile(c *gin.Context) {
+	userID := c.GetInt("userID")
+	var user dto.UserRequest
+
+	err := c.ShouldBindJSON(&user)
+	if err != nil {
+		badRequest(c, http.StatusBadRequest, err)
+		return
+	}
+
+	err = app.mongo.UpdatedProfile(userID, user)
+	if err != nil {
+		return
 	}
 
 	jsonResp(c, http.StatusOK)

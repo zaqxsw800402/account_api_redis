@@ -63,7 +63,11 @@
                 </ul>
 
                 {{if eq .IsAuthenticated 1}}
+
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li id="user-profile" class="nav-item">
+                            <a class="nav-link" href="/admin/user-profile">Profile</a>
+                        </li>
                         <li id="login-link" class="nav-item">
                             <a class="nav-link" href="/logout">Logout</a>
                         </li>

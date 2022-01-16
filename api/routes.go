@@ -61,5 +61,7 @@ func (app *application) routes() http.Handler {
 	admin.POST("/check-customer_id", app.checkUserID)
 	//admin.POST("/all-customers/:id/accounts/:account_id", app.ah.makeTransaction)
 
+	admin.POST("/update-profile", app.updateProfile)
+
 	return server
 }

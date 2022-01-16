@@ -16,11 +16,6 @@ func (app *application) routes() http.Handler {
 
 	mux.Route("/admin", func(mux chi.Router) {
 		mux.Use(app.Auth)
-		//	mux.Get("/virtual-terminal", app.VirtualTerminal)
-		//	mux.Get("/all-sales", app.AllSales)
-		//	mux.Get("/all-subscriptions", app.AllSubscriptions)
-		//	mux.Get("/sales/{id}", app.ShowSale)
-		//	mux.Get("/subscriptions/{id}", app.ShowSubscription)
 		mux.Get("/all-customers", app.AllCustomers)
 		mux.Get("/all-customers/0", app.OneCustomer)
 
@@ -35,6 +30,8 @@ func (app *application) routes() http.Handler {
 		mux.Get("/deposit", app.Deposit)
 
 		mux.Get("/all-users", app.AllUsers)
+
+		mux.Get("/user-profile", app.UserProfile)
 	})
 
 	// create a new user

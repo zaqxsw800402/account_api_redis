@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"log"
 	"net/http"
 	"red/internal/encryption"
 	"red/internal/urlsigner"
@@ -148,6 +149,23 @@ func (app *application) AllUsers(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) OneUser(w http.ResponseWriter, r *http.Request) {
 	if err := app.renderTemplate(w, r, "one-user", &templateData{}); err != nil {
+		app.errorLog.Print(err)
+	}
+}
+
+func (app *application) UserProfile(w http.ResponseWriter, r *http.Request) {
+	userID := app.Session.GetInt(r.Context(), "userID")
+	profile, err := app.mongodb.ReadProfile(userID)
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	stringMap := make(map[string]string)
+	stringMap["firstname"] = profile.FirstName
+	stringMap["lastname"] = profile.LastName
+	stringMap["email"] = profile.Email
+
+	if err = app.renderTemplate(w, r, "user-profile", &templateData{StringMap: stringMap}); err != nil {
 		app.errorLog.Print(err)
 	}
 }

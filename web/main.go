@@ -11,6 +11,7 @@ import (
 	"os"
 	"red/internal/driver"
 	"red/internal/models"
+	"red/internal/mongo"
 	"time"
 
 	"github.com/alexedwards/scs/v2"
@@ -38,6 +39,7 @@ type application struct {
 	templateCache map[string]*template.Template
 	version       string
 	DB            models.DBModel
+	mongodb       mongo.Collection
 	Session       *scs.SessionManager
 }
 
@@ -71,6 +73,12 @@ func main() {
 	dbName := os.Getenv("DB_NAME")
 	cfg.db.dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=false", dbUser, dbPassword, dbHost, dbPort, dbName)
 	//flag.StringVar(&cfg.mysql.dsn, "dsn", "trevor:secret@tcp(localhost:3306)/widgets?parseTime=true&tls=false", "DSN")
+
+	mongodbUser := os.Getenv("MONGODB_USER")
+	mongodbPassword := os.Getenv("MONGODB_PASSWORD")
+	mongodbHost := os.Getenv("MONGODB_HOST")
+
+	mongodb := mongo.New(mongodbHost, mongodbUser, mongodbPassword)
 
 	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen on")
 	flag.StringVar(&cfg.env, "env", "development", "Application environment {development|production}")
@@ -112,6 +120,7 @@ func main() {
 		templateCache: tc,
 		version:       version,
 		DB:            models.DBModel{DB: conn},
+		mongodb:       mongodb,
 		Session:       session,
 	}
 
