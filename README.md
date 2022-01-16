@@ -21,10 +21,12 @@
 ### redis
 用在 all customer, all account 提供資料的緩存，及middleware 驗證的緩存 
 ### nsq
-用來解偶api及mailer
+用來解耦api及mailer
 ### travis.ci
 練習ci cd到aws ebs上
 ### mongodb
 儲存用戶基本資料
+### mysql
+儲存交易資料
 
 
