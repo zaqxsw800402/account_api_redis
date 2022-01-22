@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"os"
-	"path"
 	"time"
 )
 
@@ -14,12 +13,12 @@ type Logger struct {
 }
 
 func New(logPath, logFile string) Logger {
-	logFilePath := logPath
+	//logFilePath := logPath
 	logFileName := logFile
-	fileName := path.Join(logFilePath, logFileName)
+	//fileName := path.Join(logFilePath, logFileName)
 	//写入文件
 	//src, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
-	src, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	src, err := os.OpenFile(logFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Println("err", err)
 	}

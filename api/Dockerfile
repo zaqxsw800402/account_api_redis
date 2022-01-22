@@ -1,4 +1,4 @@
-FROM golang:1.17-alpine
+FROM golang:1.17-alpine As builder
 
 RUN apk add build-base
 
@@ -11,7 +11,12 @@ RUN go mod download
 
 COPY . ./
 
-RUN go build -o /api
+RUN go build -o api .
+
+FROM alpine:3.11.3
+
+COPY --from=builder /app/api .
+COPY --from=builder /app/.env .
 
 EXPOSE 4001
 
