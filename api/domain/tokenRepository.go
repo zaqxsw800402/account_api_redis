@@ -18,7 +18,7 @@ func (u UserRepositoryDb) UpdateToken(token Token) (*Token, *errs.AppError) {
 		UpdatedAt: time.Now(),
 	})
 	if err := result.Error; err != nil {
-		//logger.Error("Error while creating new user")
+		//logger_zap.Error("Error while creating new user")
 		return nil, errs.NewUnexpectedError("unexpected error from database when update token")
 	}
 	return &token, nil
@@ -35,7 +35,7 @@ func (u UserRepositoryDb) GetUserWithToken(hash string) (*Token, *errs.AppError)
 	result := u.client.Where("token_hash = ? and expiry > ?", tokenHash[:], time.Now()).First(&token)
 
 	if err := result.Error; err != nil {
-		//logger.Error("Error while creating new user")
+		//logger_zap.Error("Error while creating new user")
 		return nil, errs.NewUnexpectedError("unexpected error from database when get user with token")
 	}
 	return &token, nil
@@ -49,7 +49,7 @@ func (u UserRepositoryDb) SaveToken(token Token) (*Token, *errs.AppError) {
 
 	result = u.client.Create(&token)
 	if err := result.Error; err != nil {
-		//logger.Error("Error while creating new user")
+		//logger_zap.Error("Error while creating new user")
 		return nil, errs.NewUnexpectedError("unexpected error from database when save token")
 	}
 

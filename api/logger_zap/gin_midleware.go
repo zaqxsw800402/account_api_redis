@@ -1,4 +1,4 @@
-package logger
+package logger_zap
 
 import (
 	"github.com/gin-gonic/gin"

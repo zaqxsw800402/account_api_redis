@@ -29,7 +29,7 @@ func (d AccountRepositoryDB) Save(a Account) (*Account, *errs.AppError) {
 	result := d.client.Create(&a)
 	err := result.Error
 	if err != nil {
-		//logger.Error("Error while creating new account")
+		//logger_zap.Error("Error while creating new account")
 		return nil, errs.NewUnexpectedError("Unexpected error from database")
 	}
 
@@ -41,7 +41,7 @@ func (d AccountRepositoryDB) Update(a Account) (*Account, *errs.AppError) {
 	result := d.client.Model(&Account{}).Where("account_id", a.AccountId).Updates(&a)
 	err := result.Error
 	if err != nil {
-		//logger.Error("Error while creating new account")
+		//logger_zap.Error("Error while creating new account")
 		return nil, errs.NewUnexpectedError("Unexpected error from database")
 	}
 
@@ -69,7 +69,7 @@ func (d AccountRepositoryDB) ByID(accountID uint) (*Account, *errs.AppError) {
 	}
 
 	if err := result.Error; err != nil {
-		//logger.Error("Error while querying accounts table" + err.Error())
+		//logger_zap.Error("Error while querying accounts table" + err.Error())
 		if err == sql.ErrNoRows {
 			return nil, errs.NewNotFoundError("Account not found")
 		}
@@ -86,7 +86,7 @@ func (d AccountRepositoryDB) TransactionsByID(accountID uint) ([]Transaction, *e
 	//}
 
 	if err := result.Error; err != nil {
-		//logger.Error("Error while querying accounts table" + err.Error())
+		//logger_zap.Error("Error while querying accounts table" + err.Error())
 		if err == sql.ErrNoRows {
 			return nil, errs.NewNotFoundError("transactions not found")
 		}
@@ -103,7 +103,7 @@ func (d AccountRepositoryDB) ByCustomerID(id uint) ([]Account, *errs.AppError) {
 	result := d.client.Where("customer_id = ?", id).Find(&a)
 
 	if err := result.Error; err != nil {
-		//logger.Error("Error while querying accounts table" + err.Error())
+		//logger_zap.Error("Error while querying accounts table" + err.Error())
 		if err == sql.ErrNoRows {
 			return nil, errs.NewNotFoundError("Account not found with customer_id")
 		}
@@ -118,7 +118,7 @@ func (d AccountRepositoryDB) SaveTransaction(t Transaction) (*Transaction, *errs
 	tx := d.client.Begin()
 	err := tx.Error
 	if err != nil {
-		//logger.Error("Error while starting a new transaction for bank account transaction" + err.Error())
+		//logger_zap.Error("Error while starting a new transaction for bank account transaction" + err.Error())
 		return nil, errs.NewUnexpectedError("Unexpected database error when save transaction")
 	}
 
@@ -133,7 +133,7 @@ func (d AccountRepositoryDB) SaveTransaction(t Transaction) (*Transaction, *errs
 		Updates(Account{Amount: t.NewBalance})
 	if err := result.Error; err != nil {
 		tx.Rollback()
-		//logger.Error("Error while update account amount" + err.Error())
+		//logger_zap.Error("Error while update account amount" + err.Error())
 		return nil, errs.NewUnexpectedError("Unexpected database error when save transaction")
 	}
 
@@ -141,14 +141,14 @@ func (d AccountRepositoryDB) SaveTransaction(t Transaction) (*Transaction, *errs
 	// 更改帳戶金額失敗則回滾
 	if err := result.Error; err != nil {
 		tx.Rollback()
-		//logger.Error("Error while update account amount" + err.Error())
+		//logger_zap.Error("Error while update account amount" + err.Error())
 		return nil, errs.NewUnexpectedError("Unexpected database error when save transaction")
 	}
 	// 進行提交
 	result = tx.Commit()
 	if err = result.Error; err != nil {
 		tx.Rollback()
-		//logger.Error("Error while committing transaction for bank account" + err.Error())
+		//logger_zap.Error("Error while committing transaction for bank account" + err.Error())
 		return nil, errs.NewUnexpectedError("Unexpected database error while saving transaction commit failed ")
 	}
 

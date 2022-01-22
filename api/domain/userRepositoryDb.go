@@ -30,7 +30,7 @@ func (u UserRepositoryDb) ByID(id string) (*User, *errs.AppError) {
 	// 在account表格裡預載入交易紀錄的資料，並且讀取特定id的資料
 	result := u.client.Table("users").Where("user_id = ?", id).Find(&user)
 	if err := result.Error; err != nil {
-		//logger.Error("Error while querying accounts table" + err.Error())
+		//logger_zap.Error("Error while querying accounts table" + err.Error())
 		if err == sql.ErrNoRows {
 			return nil, errs.NewNotFoundError("user not found by user_id")
 		}
@@ -48,7 +48,7 @@ func (u UserRepositoryDb) ByEmail(id string) (*User, *errs.AppError) {
 	}
 
 	if err := result.Error; err != nil {
-		//logger.Error("Error while querying accounts table" + err.Error())
+		//logger_zap.Error("Error while querying accounts table" + err.Error())
 		if err == sql.ErrNoRows {
 			return nil, errs.NewNotFoundError("user not found by email")
 		}
@@ -64,7 +64,7 @@ func (u UserRepositoryDb) FindAll() ([]User, *errs.AppError) {
 	err := result.Error
 
 	if err != nil {
-		//logger.Error("Error while querying users table" + err.Error())
+		//logger_zap.Error("Error while querying users table" + err.Error())
 		return nil, errs.NewUnexpectedError("unexpected database error when get all users, " + err.Error())
 	}
 
@@ -77,7 +77,7 @@ func (u UserRepositoryDb) UpdatePassword(user User) (*User, *errs.AppError) {
 	})
 	err := result.Error
 	if err != nil {
-		//logger.Error("Error while creating new user")
+		//logger_zap.Error("Error while creating new user")
 		return nil, errs.NewUnexpectedError("unexpected error from database when update user's password")
 	}
 

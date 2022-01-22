@@ -33,7 +33,7 @@ func (s DefaultCustomerService) GetAllCustomers(userID int) ([]dto.CustomerRespo
 	// 查詢資料
 	customers, err := s.repo.FindAll(userID)
 	if err != nil {
-		//logger.Error("failed to get all customers error")
+		//logger_zap.Error("failed to get all customers error")
 		return nil, err
 	}
 	// 將資料格式轉為回傳的格式

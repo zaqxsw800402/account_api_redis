@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"red/domain"
+	"red/logger_logrus"
 	"red/mongo"
 	"red/redis"
 	"red/service"
@@ -27,15 +28,15 @@ type config struct {
 }
 
 type application struct {
-	config   config
-	infoLog  *log.Logger
-	errorLog *log.Logger
-	ch       CustomerHandler
-	ah       AccountHandler
-	uh       UserHandlers
-	mongo    mongo.Collection
-	redis    redis.Database
-	mail     *nsq.Producer
+	config config
+	log    logger_logrus.Logger
+	//errorLog *log.Logger
+	ch    CustomerHandler
+	ah    AccountHandler
+	uh    UserHandlers
+	mongo mongo.Collection
+	redis redis.Database
+	mail  *nsq.Producer
 }
 
 func (app *application) serve() error {
@@ -48,7 +49,7 @@ func (app *application) serve() error {
 		WriteTimeout:      5 * time.Second,
 	}
 
-	app.infoLog.Printf("Starting Back end server in %s mode on port %d", app.config.env, app.config.port)
+	app.log.Infof("Starting Back end server in %s mode on port %d", app.config.env, app.config.port)
 
 	return srv.ListenAndServe()
 }
@@ -80,8 +81,8 @@ func main() {
 
 	flag.Parse()
 
-	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
-	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	//infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	//errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	dbClient, err := domain.GetDBClient(cfg.db.dsn)
 	if err != nil {
@@ -126,21 +127,23 @@ func main() {
 		log.Println(err.Error())
 	}
 
+	logrus := logger_logrus.New("./log", "gin.log")
+
 	app := &application{
-		config:   cfg,
-		infoLog:  infoLog,
-		errorLog: errorLog,
-		ch:       ch,
-		ah:       ah,
-		uh:       uh,
-		redis:    redisDB,
-		mongo:    mongodb,
-		mail:     producer,
+		config: cfg,
+		log:    logrus,
+		//errorLog: errorLog,
+		ch:    ch,
+		ah:    ah,
+		uh:    uh,
+		redis: redisDB,
+		mongo: mongodb,
+		mail:  producer,
 	}
 
 	err = app.serve()
 	if err != nil {
-		app.errorLog.Println(err)
+		app.log.Debug(err.Error())
 		log.Fatal(err)
 	}
 

@@ -21,7 +21,7 @@ func (d CustomerRepositoryDb) Save(c Customer) (*Customer, *errs.AppError) {
 	result := d.client.Create(&c)
 	err := result.Error
 	if err != nil {
-		//logger.Error("Error while creating new customer")
+		//logger_zap.Error("Error while creating new customer")
 		return nil, errs.NewUnexpectedError("Unexpected error from database when create new customer")
 	}
 
@@ -37,7 +37,7 @@ func (d CustomerRepositoryDb) Update(c Customer) (*Customer, *errs.AppError) {
 	})
 	err := result.Error
 	if err != nil {
-		//logger.Error("Error while creating new customer")
+		//logger_zap.Error("Error while creating new customer")
 		return nil, errs.NewUnexpectedError("Unexpected error from database when updating customer")
 	}
 
@@ -50,7 +50,7 @@ func (d CustomerRepositoryDb) ByID(id string) (*Customer, *errs.AppError) {
 	var c Customer
 	result := d.client.Where("customer_id = ?", id).First(&c)
 	if err := result.Error; err != nil {
-		//logger.Error("Error while querying customers table" + result.Error.Error())
+		//logger_zap.Error("Error while querying customers table" + result.Error.Error())
 		if err == sql.ErrNoRows {
 			return nil, errs.NewNotFoundError("Customer not found")
 		}
@@ -76,7 +76,7 @@ func (d CustomerRepositoryDb) FindAll(userID int) ([]Customer, *errs.AppError) {
 	result := d.client.Where(Customer{UserID: uint(userID)}).Find(&customers)
 
 	if err := result.Error; err != nil {
-		//logger.Error("Error while querying customers table" + err.Error())
+		//logger_zap.Error("Error while querying customers table" + err.Error())
 		return nil, errs.NewUnexpectedError("Unexpected database error when find all customer with user id")
 	}
 

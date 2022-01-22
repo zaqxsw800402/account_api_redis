@@ -26,7 +26,8 @@ func (app *application) routes() http.Handler {
 	server.POST("/api/reset-password", app.ResetPassword)
 
 	// 使用zap來記錄api的使用
-	//server.Use(logger.GinLogger(), logger.GinRecovery(true))
+	//server.Use(logger_zap.GinLogger(), logger_zap.GinRecovery(true))
+	server.Use(app.log.LoggerToFile())
 
 	// admin group
 	admin := server.Group("/api/admin", app.Auth())
