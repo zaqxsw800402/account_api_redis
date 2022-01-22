@@ -3,15 +3,16 @@ services:
   - docker
 
 before_install:
-  - docker build -t ichih/bank-api ./api
+  - docker build -t ichih/bank-ap-test -f Dockfile_test ./api
 
 script:
-  - docker run ichih/bank-api go test -run ./...
+  - docker run ichih/bank-api-test go test -run ./...
 
 after_success:
   # login to docker cli
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
   # push to docker hub
+  - docker build -t ichih/bank-api ./api
   - docker build -t ichih/bank-web ./web
   - docker build -t ichih/bank-nginx ./nginx
   - docker build -t ichih/bank-cronjob ./cronjob
