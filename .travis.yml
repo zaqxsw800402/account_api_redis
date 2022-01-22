@@ -3,7 +3,7 @@ services:
   - docker
 
 before_install:
-  - docker build -t ichih/bank-api-test -f ./api/Dockfile_test ./api
+  - docker build -t ichih/bank-api-test -f ./api/Dockerfile_test ./api
 
 script:
   - docker run ichih/bank-api-test go test -run ./...
